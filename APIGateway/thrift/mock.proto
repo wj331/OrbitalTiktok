@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package protopackage;
+
+option go_package = "protopackage";
+
+message MockReq {
+    string Msg = 1;
+    map<string, string> strMap = 2;
+    repeated string strList = 3;
+}
+
+service Mock {
+    rpc Test(MockReq) returns (StringResponse) {}
+}
+
+message StringResponse {
+    string response = 1;
+}
