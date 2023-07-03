@@ -1,4 +1,4 @@
-module github.com/simbayippy/OrbitalxTiktok/RPC
+module github.com/simbayippy/OrbitalxTiktok/RPCserver
 
 go 1.20
 
