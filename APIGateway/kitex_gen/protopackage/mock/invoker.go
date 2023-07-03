@@ -4,7 +4,7 @@ package mock
 
 import (
 	server "github.com/cloudwego/kitex/server"
-	protopackage "github.com/simbayippy/orbital/kitex_gen/protopackage"
+	protopackage "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/protopackage"
 )
 
 // NewInvoker creates a server.Invoker with the given handler and options.
