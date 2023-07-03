@@ -9,7 +9,7 @@ import (
 	kitex "github.com/cloudwego/kitex/pkg/serviceinfo"
 	streaming "github.com/cloudwego/kitex/pkg/streaming"
 	proto "google.golang.org/protobuf/proto"
-	protopackage "orbital/kitex_gen/protopackage"
+	protopackage "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/protopackage"
 )
 
 func serviceInfo() *kitex.ServiceInfo {

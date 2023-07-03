@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	http "orbital/kitex_gen/http"
-	orbital "orbital/kitex_gen/orbital"
-	protopackage "orbital/kitex_gen/protopackage"
-	user "orbital/kitex_gen/user"
+	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/http"
+	orbital "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/orbital"
+	protopackage "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/protopackage"
+	user "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/user"
 
 	// "github.com/cloudwego/kitex/pkg/generic"
 	"github.com/cloudwego/kitex/pkg/klog"

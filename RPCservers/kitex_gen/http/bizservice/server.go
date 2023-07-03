@@ -3,7 +3,7 @@ package bizservice
 
 import (
 	server "github.com/cloudwego/kitex/server"
-	http "orbital/kitex_gen/http"
+	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/http"
 )
 
 // NewServer creates a server.Server with the given handler and options.

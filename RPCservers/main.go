@@ -6,11 +6,11 @@ import (
 
 	"sync"
 
-	orbital "orbital/kitex_gen/orbital/peopleservice"
+	orbital "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/orbital/peopleservice"
 
-	http "orbital/kitex_gen/http/bizservice"
+	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/http/bizservice"
 
-	user "orbital/kitex_gen/user/userservice"
+	user "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/user/userservice"
 
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server/genericserver"

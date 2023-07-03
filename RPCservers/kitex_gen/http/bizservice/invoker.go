@@ -4,7 +4,7 @@ package bizservice
 
 import (
 	server "github.com/cloudwego/kitex/server"
-	http "orbital/kitex_gen/http"
+	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/http"
 )
 
 // NewInvoker creates a server.Invoker with the given handler and options.

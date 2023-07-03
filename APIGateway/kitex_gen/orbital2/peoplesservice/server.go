@@ -3,7 +3,7 @@ package peoplesservice
 
 import (
 	server "github.com/cloudwego/kitex/server"
-	orbital2 "github.com/simbayippy/orbital/kitex_gen/orbital2"
+	orbital2 "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital2"
 )
 
 // NewServer creates a server.Server with the given handler and options.

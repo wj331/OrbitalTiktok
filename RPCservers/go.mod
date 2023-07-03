@@ -1,4 +1,4 @@
-module orbital
+module github.com/simbayippy/OrbitalxTiktok/RPC
 
 go 1.20
 
@@ -61,4 +61,4 @@ require (
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
-replace github.com/cloudwego/kitex => /Users/yipsimba/OrbitalxTiktok/kitex
+replace github.com/cloudwego/kitex => github.com/simbayippy/OrbitalxTiktok/kitex

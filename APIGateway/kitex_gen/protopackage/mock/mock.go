@@ -8,7 +8,7 @@ import (
 	client "github.com/cloudwego/kitex/client"
 	kitex "github.com/cloudwego/kitex/pkg/serviceinfo"
 	streaming "github.com/cloudwego/kitex/pkg/streaming"
-	protopackage "github.com/simbayippy/orbital/kitex_gen/protopackage"
+	protopackage "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/protopackage"
 	proto "google.golang.org/protobuf/proto"
 )
 

@@ -3,7 +3,7 @@ package mock
 
 import (
 	server "github.com/cloudwego/kitex/server"
-	protopackage "orbital/kitex_gen/protopackage"
+	protopackage "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/protopackage"
 )
 
 // NewServer creates a server.Server with the given handler and options.

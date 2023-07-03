@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/cloudwego/kitex/client"
-	pb "github.com/simbayippy/orbital/kitex_gen/orbital2"
-	peopleService "github.com/simbayippy/orbital/kitex_gen/orbital2/peoplesservice"
+	pb "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital2"
+	peopleService "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital2/peoplesservice"
 )
 
 func main() {

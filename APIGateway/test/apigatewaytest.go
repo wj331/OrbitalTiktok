@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 
-	pb "github.com/simbayippy/orbital/kitex_gen/protopackage"
+	pb "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/protopackage"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

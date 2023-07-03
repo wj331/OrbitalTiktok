@@ -28,7 +28,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/utils"
 
-	orbital "github.com/simbayippy/orbital/kitex_gen/orbital"
+	orbital "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"

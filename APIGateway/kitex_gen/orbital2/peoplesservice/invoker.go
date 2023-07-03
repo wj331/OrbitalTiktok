@@ -4,7 +4,7 @@ package peoplesservice
 
 import (
 	server "github.com/cloudwego/kitex/server"
-	orbital2 "github.com/simbayippy/orbital/kitex_gen/orbital2"
+	orbital2 "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital2"
 )
 
 // NewInvoker creates a server.Invoker with the given handler and options.

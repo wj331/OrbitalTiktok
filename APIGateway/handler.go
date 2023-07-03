@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	orbital "github.com/simbayippy/orbital/kitex_gen/orbital"
-	protopackage "github.com/simbayippy/orbital/kitex_gen/protopackage"
+	orbital "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital"
+	protopackage "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/protopackage"
 )
 
 var (

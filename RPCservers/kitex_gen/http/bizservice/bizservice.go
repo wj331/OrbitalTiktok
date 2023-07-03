@@ -6,7 +6,7 @@ import (
 	"context"
 	client "github.com/cloudwego/kitex/client"
 	kitex "github.com/cloudwego/kitex/pkg/serviceinfo"
-	http "orbital/kitex_gen/http"
+	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/http"
 )
 
 func serviceInfo() *kitex.ServiceInfo {

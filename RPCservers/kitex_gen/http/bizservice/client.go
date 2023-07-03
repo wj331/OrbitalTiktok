@@ -6,7 +6,7 @@ import (
 	"context"
 	client "github.com/cloudwego/kitex/client"
 	callopt "github.com/cloudwego/kitex/client/callopt"
-	http "orbital/kitex_gen/http"
+	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/kitex_gen/http"
 )
 
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
