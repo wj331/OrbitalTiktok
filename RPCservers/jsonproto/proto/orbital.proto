@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package proto;
+// The greeting service definition.
+option go_package = "proto";
+
+message Person {
+  string name = 1;
+  int32 age = 2;
+}
+
+message Request {
+  string message = 1;
+}
+
+message Response {
+  string message = 1;
+}
+
+service ProtoService {
+  rpc editPerson (Person) returns (Person) {}
+  rpc echo (Request) returns (Response) {}
+}
