@@ -188,13 +188,11 @@ func main() {
 	RegisterCacheRoute(h)
 	RegisterAuthRoute(h)
 
-	// new
+	// updates instances of services every minute
 	localUtils.RefreshInstances(services)
 
 	h.Spin()
 }
-
-// IMPORTANT (ROUTING PRIORITY): static route > parametric route > wildcard route
 
 // for JSON generic call. MAIN use case for TikTok. Basically forwards the request that the API gateway receives directly to the RPC server.
 func RegisterRouteJSONGenericCall(h *server.Hertz) {
@@ -292,6 +290,64 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 	}
 }
 
+// for HTTP generic call. also dependent on how .thrift file is implemented!!
+func RegisterRouteHTTPGenericCall(h *server.Hertz) {
+	v2 := h.Group("/bizservice")
+	{
+		v2.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+			method := c.Param("method")
+
+			path := string(c.Path())
+			parts := strings.Split(path, "/")
+			// which here is bizservice
+			serviceName := parts[1]
+
+			pool, ok := pools[serviceName]
+			if !ok {
+				// handle the case where there is no pool for the given service name
+				c.String(consts.StatusBadRequest, "Invalid service name")
+				return
+			}
+
+			cc := pool.Get().(genericclient.Client)
+			defer pool.Put(cc) // make sure to put the client back in the pool when done
+
+			data := c.GetRequest().BodyBytes()
+
+			var jsonData map[string]interface{}
+			err2 := json.Unmarshal(data, &jsonData)
+			if err2 != nil {
+				c.String(consts.StatusBadRequest, "Invalid JSON request data")
+				return
+			}
+
+			url := fmt.Sprintf("http://example.com/bizservice/%s", method)
+
+			// cannot get the current http request from argument c, and not a drastic overhead to just create a new http request.
+			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(data))
+			if err != nil {
+				klog.Errorf("new http request failed: %v", err)
+				return
+			}
+			req.Header.Set("token", "3")
+			customReq, err := generic.FromHTTPRequest(req)
+			if err != nil {
+				klog.Errorf("convert request failed: %v", err)
+				return
+			}
+			resp, err := cc.GenericCall(ctx, "", customReq)
+			if err != nil {
+				klog.Errorf("generic call failed: %v", err)
+				return
+			}
+			pool.Put(cc)
+
+			realResp := resp.(*generic.HTTPResponse)
+			c.String(consts.StatusOK, "UpdateUser response, status code: %v, body: %v\n", realResp.StatusCode, realResp.Body)
+		}))
+	}
+}
+
 type RequestData struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`
@@ -360,64 +416,6 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 		// Send a response
 		c.String(consts.StatusOK, "all okay")
 	}))
-}
-
-// for HTTP generic call. also dependent on how .thrift file is implemented!!
-func RegisterRouteHTTPGenericCall(h *server.Hertz) {
-	v2 := h.Group("/bizservice")
-	{
-		v2.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
-			method := c.Param("method")
-
-			path := string(c.Path())
-			parts := strings.Split(path, "/")
-			// which here is bizservice
-			serviceName := parts[1]
-
-			pool, ok := pools[serviceName]
-			if !ok {
-				// handle the case where there is no pool for the given service name
-				c.String(consts.StatusBadRequest, "Invalid service name")
-				return
-			}
-
-			cc := pool.Get().(genericclient.Client)
-			defer pool.Put(cc) // make sure to put the client back in the pool when done
-
-			data := c.GetRequest().BodyBytes()
-
-			var jsonData map[string]interface{}
-			err2 := json.Unmarshal(data, &jsonData)
-			if err2 != nil {
-				c.String(consts.StatusBadRequest, "Invalid JSON request data")
-				return
-			}
-
-			url := fmt.Sprintf("http://example.com/bizservice/%s", method)
-
-			// cannot get the current http request from argument c, and not a drastic overhead to just create a new http request.
-			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(data))
-			if err != nil {
-				klog.Errorf("new http request failed: %v", err)
-				return
-			}
-			req.Header.Set("token", "3")
-			customReq, err := generic.FromHTTPRequest(req)
-			if err != nil {
-				klog.Errorf("convert request failed: %v", err)
-				return
-			}
-			resp, err := cc.GenericCall(ctx, "", customReq)
-			if err != nil {
-				klog.Errorf("generic call failed: %v", err)
-				return
-			}
-			pool.Put(cc)
-
-			realResp := resp.(*generic.HTTPResponse)
-			c.String(consts.StatusOK, "UpdateUser response, status code: %v, body: %v\n", realResp.StatusCode, realResp.Body)
-		}))
-	}
 }
 
 // RegisterCacheRoute: to demonstrate caching
@@ -501,7 +499,3 @@ func RegisterAuthRoute(h *server.Hertz) {
 		})
 	}
 }
-
-/*
-	Helper functions: MOVED TO THEIR OWN FILES: discovery, genericClient and ratelimt. Remain in same package
-*/
