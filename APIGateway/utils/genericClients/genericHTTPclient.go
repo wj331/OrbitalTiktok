@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -6,17 +6,20 @@ import (
 
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/client/genericclient"
-
 	"github.com/cloudwego/kitex/pkg/generic"
+	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/loadbalance"
 	"github.com/cloudwego/kitex/pkg/retry"
-	// "github.com/simbayippy/kitex-repo/pkg/generic"
 )
 
-func NewJSONProtoGenericClient(destServiceName string, protoFilePath string) (genericclient.Client, error) {
-	instancesLock.RLock()
-	instances := instances[destServiceName]
-	instancesLock.RUnlock()
+func NewHTTPGenericClient(destServiceName string, thriftFilePath string) (genericclient.Client, error) {
+	// **PRE-OPTIMIZATION**
+	// instances := DiscoverAddress(destServiceName)
+
+	// **OPTIMIZATION** Service discovery interval: Instead of calling DiscoverAddress every time a new client is made,
+	// the instances of valid services are updates every interval as specified in the main() method
+	// reason for doing this instead of calling DiscoverAddress every time this method is called is because if there is a sudden surge and large number of requests, NewBinaryGenericCLient is called multiple times which then calls DiscoverAddress multiple times. having it cached can help save unncessary computation in this case
+	instances := GetInstances(destServiceName)
 
 	if len(instances) == 0 {
 		fmt.Print("No instances found!\n")
@@ -33,14 +36,15 @@ func NewJSONProtoGenericClient(destServiceName string, protoFilePath string) (ge
 	fp := retry.NewFailurePolicy()
 	fp.WithMaxRetryTimes(3) // set the maximum number of retries to 3, default 2: client.WithFailureRetry(fp)
 
-	p, err := generic.NewPbFileProvider(protoFilePath)
+	// path := fmt.Sprintf("./thrift/%s.thrift", thriftFilePath)
+
+	p, err := generic.NewThriftFileProvider(thriftFilePath)
 	if err != nil {
-		panic(err)
+		klog.Fatalf("new thrift file provider failed: %v", err)
 	}
-	// EXTRA ASSIGNMENT PART: under kitex/pkg/generic, calling the method generci.JSONThriftGeneric() also internally calls from the jsonthrift_codec!!
-	g, err := generic.JSONProtoGeneric(p)
+	g, err := generic.HTTPThriftGeneric(p)
 	if err != nil {
-		panic(err)
+		klog.Fatalf("new http thrift generic failed: %v", err)
 	}
 
 	lb := loadbalance.NewWeightedRoundRobinBalancer()
@@ -48,7 +52,7 @@ func NewJSONProtoGenericClient(destServiceName string, protoFilePath string) (ge
 	// second argument in NewClient() is different from binary client
 	genericCli, err := genericclient.NewClient(destServiceName, g, connTimeout, rpcTimeout, client.WithFailureRetry(fp), client.WithLoadBalancer(lb), client.WithHostPorts(instances...))
 	if err != nil {
-		panic(err)
+		klog.Fatalf("new http generic client failed: %v", err)
 	}
 
 	return genericCli, err

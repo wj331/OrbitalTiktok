@@ -1,36 +1,22 @@
-package main
+package utils
 
 import (
 	"fmt"
 	"log"
 
+	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
+
+var NacosClient naming_client.INamingClient
 
 func DiscoverAddress(serviceName string) []string {
 	if serviceName == "" {
 		return nil
 	}
 
-	// **PRE-OPTIMIZATION**
-	// cli, err := clients.NewNamingClient(
-	// 	vo.NacosClientParam{
-	// 		ServerConfigs: []constant.ServerConfig{
-	// 			// port of the nacos backend server
-	// 			*constant.NewServerConfig("127.0.0.1", 8848),
-	// 		},
-	// 	},
-	// )
-	// if err != nil {
-	// 	log.Fatalf("Failed to create Nacos client: %v", err)
-	// 	return nil
-	// }
-	// service, err := cli.GetService(vo.GetServiceParam{
-	// 	ServiceName: serviceName,
-	// })
-
 	// **OPTIMIZATION** initialized the nacos client at the begging instead of creating a new nacos client every time DiscoverAddress is called
-	service, err := nacosClient.GetService(vo.GetServiceParam{
+	service, err := NacosClient.GetService(vo.GetServiceParam{
 		ServiceName: serviceName,
 	})
 	if err != nil {

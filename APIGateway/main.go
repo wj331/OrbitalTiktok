@@ -31,12 +31,14 @@ import (
 	orbital "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
+	// "github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
 	// imported as `cache`
-	"github.com/patrickmn/go-cache"
+
+	// new
+	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
 type RequestData struct {
@@ -50,7 +52,7 @@ var (
 	ccBinaryPool = &sync.Pool{
 		New: func() interface{} {
 			// TODO, create a new pool of clients that serve other services too
-			cc, err := NewBinaryGenericClient("PeopleService")
+			cc, err := localUtils.NewBinaryGenericClient("PeopleService")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -63,7 +65,7 @@ var (
 	ccHTTPUserServicePool = &sync.Pool{
 		New: func() interface{} {
 			// since requires a NewThriftFileProvider(file_path)
-			cc, err := NewHTTPGenericClient("UserService", "./thrift/user.thrift")
+			cc, err := localUtils.NewHTTPGenericClient("UserService", "./thrift/user.thrift")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -76,7 +78,7 @@ var (
 	ccHTTPBizServicePool = &sync.Pool{
 		New: func() interface{} {
 			// since requires a NewThriftFileProvider(file_path)
-			cc, err := NewHTTPGenericClient("BizService", "./thrift/http.thrift")
+			cc, err := localUtils.NewHTTPGenericClient("BizService", "./thrift/http.thrift")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -89,7 +91,7 @@ var (
 	ccJSONPool = &sync.Pool{
 		New: func() interface{} {
 			// due to similarities of how servers are implemented, reusing orbital.thrift file
-			cc, err := NewJSONGenericClient("JSONService", "./thrift/orbital.thrift")
+			cc, err := localUtils.NewJSONGenericClient("JSONService", "./thrift/orbital.thrift")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -101,7 +103,7 @@ var (
 	ccJSONProtoPool = &sync.Pool{
 		New: func() interface{} {
 			// due to similarities of how servers are implemented, reusing orbital.thrift file
-			cc, err := NewJSONProtoGenericClient("JSONProtoService", "./thrift/mock.proto")
+			cc, err := localUtils.NewJSONProtoGenericClient("JSONProtoService", "./thrift/mock.proto")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -124,31 +126,35 @@ var (
 	rc = utils.NewThriftMessageCodec()
 
 	// to handle the Nacos client
-	nacosClient naming_client.INamingClient
+	// nacosClient naming_client.INamingClient
 
-	// to handle the available RPC instances
-	instancesLock sync.RWMutex
-	instances     = make(map[string][]string) // map to store discovered instances for each service
+	// // to handle the available RPC instances
+	// instancesLock sync.RWMutex
+	// instances     = make(map[string][]string) // map to store discovered instances for each service
 
-	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
-	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
+	// // IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
+	// limiterCache = cache.New(5*time.Minute, 6*time.Minute)
 
-	// TODO: rate limiting numbers
-	MaxQPS    = 1000000000 // Each IP address how many QPS
-	BurstSize = 1000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
+	// // TODO: rate limiting numbers
+	// MaxQPS    = 1000000000 // Each IP address how many QPS
+	// BurstSize = 1000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
 
-	// TODO: cache time allowed before evicted from cache. i.e. how long stored in cache
-	cacheExpiryTime = 2 * time.Second
+	// // TODO: cache time allowed before evicted from cache. i.e. how long stored in cache
+	// cacheExpiryTime = 2 * time.Second
 
-	// cache counters
-	cacheHitCount, cacheMissCount int32
+	// // cache counters
+	// cacheHitCount, cacheMissCount int32
+
+	// new
+	instanceManager = localUtils.NewInstanceManager()
 )
 
 func init() {
 
 	// initializes the nacos client: used for service registry (RPC servers) and discovery (this API gateway)
 	var err error
-	nacosClient, err = clients.NewNamingClient(
+	// New
+	localUtils.NacosClient, err = clients.NewNamingClient(
 		vo.NacosClientParam{
 			ServerConfigs: []constant.ServerConfig{
 				*constant.NewServerConfig("127.0.0.1", 8848),
@@ -162,14 +168,17 @@ func init() {
 	// REPEATED: to register the RPC instances on initialization, instead of having to wait a minute for it to be registered
 	services := []string{"PeopleService", "UserService", "BizService", "JSONService", "JSONProtoService"}
 
-	go func() {
-		// Refresh the service addresses every minute
-		for _, service := range services {
-			instancesLock.Lock()
-			instances[service] = DiscoverAddress(service)
-			instancesLock.Unlock()
-		}
-	}()
+	// go func() {
+	// 	// Refresh the service addresses every minute
+	// 	for _, service := range services {
+	// 		instancesLock.Lock()
+	// 		instances[service] = utils.DiscoverAddress(service)
+	// 		instancesLock.Unlock()
+	// 	}
+	// }()
+
+	//new
+	localUtils.AddInitialInstance(services)
 }
 
 func main() {
@@ -204,21 +213,24 @@ func main() {
 
 	services := []string{"PeopleService", "UserService", "BizService", "JSONService", "JSONProtoService"}
 
-	go func() {
-		// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
-		ticker := time.NewTicker(time.Minute)
-		for {
-			select {
-			case <-ticker.C:
-				// Refresh the service addresses every minute
-				for _, service := range services {
-					instancesLock.Lock()
-					instances[service] = DiscoverAddress(service)
-					instancesLock.Unlock()
-				}
-			}
-		}
-	}()
+	// go func() {
+	// 	// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
+	// 	ticker := time.NewTicker(time.Minute)
+	// 	for {
+	// 		select {
+	// 		case <-ticker.C:
+	// 			// Refresh the service addresses every minute
+	// 			for _, service := range services {
+	// 				instancesLock.Lock()
+	// 				instances[service] = DiscoverAddress(service)
+	// 				instancesLock.Unlock()
+	// 			}
+	// 		}
+	// 	}
+	// }()
+
+	// new
+	instanceManager.RefreshInstances(services)
 
 	h.Spin()
 }
@@ -229,7 +241,7 @@ func main() {
 func RegisterRouteJSONGenericCall(h *server.Hertz) {
 	v1 := h.Group("/jsonservice")
 	{
-		v1.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/:method", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			methodName := c.Param("method")
 
 			path := string(c.Path())
@@ -278,7 +290,7 @@ func RegisterRouteJSONGenericCall(h *server.Hertz) {
 func RegisterRouteJSONProto(h *server.Hertz) {
 	v1 := h.Group("/jsonprotoservice")
 	{
-		v1.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/:method", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			methodName := c.Param("method")
 
 			path := string(c.Path())
@@ -325,11 +337,11 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 	h.StaticFS("/", &app.FS{Root: "./", GenerateIndexPages: true})
 
-	h.GET("/get", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+	h.GET("/get", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusOK, "get")
 	}))
 
-	h.POST("/post", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+	h.POST("/post", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 		var requestData RequestData
 
 		// Bind and parse the request body into the requestData struct
@@ -391,7 +403,7 @@ func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 	// h.StaticFS("/", &app.FS{Root: "./", GenerateIndexPages: true})
 	v1 := h.Group("/userservice")
 	{
-		v1.POST("/:userId", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/:userId", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			userId := c.Param("userId")
 
 			path := string(c.Path())
@@ -446,7 +458,7 @@ func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 
 	v2 := h.Group("/bizservice")
 	{
-		v2.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v2.POST("/:method", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			method := c.Param("method")
 
 			path := string(c.Path())
@@ -518,7 +530,7 @@ func RegisterCacheRoute(h *server.Hertz) {
 	{
 		// exact same method as /post above. just to demonstrate power of caching
 		// in apache bench -> request if forwarded to backend RPC only ONCE -> result cached -> used for rest of benchmark.
-		v1.POST("/post", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/post", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			var requestData RequestData
 
 			err := c.Bind(&requestData)
