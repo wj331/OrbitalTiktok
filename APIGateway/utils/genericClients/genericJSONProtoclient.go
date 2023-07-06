@@ -1,4 +1,4 @@
-package utils
+package genericClients
 
 import (
 	"fmt"
@@ -10,11 +10,14 @@ import (
 	"github.com/cloudwego/kitex/pkg/generic"
 	"github.com/cloudwego/kitex/pkg/loadbalance"
 	"github.com/cloudwego/kitex/pkg/retry"
+
 	// "github.com/simbayippy/kitex-repo/pkg/generic"
+
+	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
 func NewJSONProtoGenericClient(destServiceName string, protoFilePath string) (genericclient.Client, error) {
-	instances := GetInstances(destServiceName)
+	instances := utils.GetInstances(destServiceName)
 
 	if len(instances) == 0 {
 		fmt.Print("No instances found!\n")

@@ -3,14 +3,56 @@ package utils
 import (
 	"fmt"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-var NacosClient naming_client.INamingClient
+var (
+	NacosClient naming_client.INamingClient
 
-func DiscoverAddress(serviceName string) []string {
+	// to handle the available RPC instances
+	instancesLock sync.RWMutex
+	instances     = make(map[string][]string) // map to store discovered instances for each service
+)
+
+func AddInitialInstance(services []string) {
+	for _, service := range services {
+		instancesLock.Lock()
+		instances[service] = discoverAddress(service)
+		instancesLock.Unlock()
+	}
+}
+
+func RefreshInstances(services []string) {
+	go func() {
+		// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
+		ticker := time.NewTicker(time.Minute)
+		for {
+			select {
+			case <-ticker.C:
+				// Refresh the service addresses every minute
+				for _, service := range services {
+					instancesLock.Lock()
+					instances[service] = discoverAddress(service) // DiscoverAddress must be a global function
+					instancesLock.Unlock()
+				}
+			}
+		}
+	}()
+}
+
+func GetInstances(service string) []string {
+	instancesLock.RLock()
+	instances := instances[service]
+	instancesLock.RUnlock()
+
+	return instances
+}
+
+func discoverAddress(serviceName string) []string {
 	if serviceName == "" {
 		return nil
 	}

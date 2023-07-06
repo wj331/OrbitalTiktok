@@ -1,8 +1,7 @@
-package utils
+package genericClients
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/cloudwego/kitex/client"
@@ -10,14 +9,16 @@ import (
 	"github.com/cloudwego/kitex/pkg/generic"
 	"github.com/cloudwego/kitex/pkg/loadbalance"
 	"github.com/cloudwego/kitex/pkg/retry"
+
+	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-var (
-	// to handle the available RPC instances
-	instancesLock sync.RWMutex
-	instances     = make(map[string][]string) // map to store discovered instances for each service
+// var (
+// 	// to handle the available RPC instances
+// 	instancesLock sync.RWMutex
+// 	instances     = make(map[string][]string) // map to store discovered instances for each service
 
-)
+// )
 
 func NewBinaryGenericClient(destServiceName string) (genericclient.Client, error) {
 	// **PRE-OPTIMIZATION**
@@ -27,7 +28,7 @@ func NewBinaryGenericClient(destServiceName string) (genericclient.Client, error
 	// the instances of valid services are updates every interval as specified in the main() method
 	// reason for doing this instead of calling DiscoverAddress every time this method is called is because if there is a sudden surge and large number of requests, NewBinaryGenericCLient is called multiple times which then calls DiscoverAddress multiple times. having it cached can help save unncessary computation in this case
 
-	instances := GetInstances(destServiceName)
+	instances := utils.GetInstances(destServiceName)
 
 	if len(instances) == 0 {
 		fmt.Print("No instances found!\n")

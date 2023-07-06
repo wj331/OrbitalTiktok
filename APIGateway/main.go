@@ -36,15 +36,12 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
 	// imported as `cache`
+	"github.com/patrickmn/go-cache"
 
 	// new
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
+	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils/genericClients"
 )
-
-type RequestData struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
-}
 
 // local variables for **OPTIMIZATION**
 var (
@@ -52,7 +49,7 @@ var (
 	ccBinaryPool = &sync.Pool{
 		New: func() interface{} {
 			// TODO, create a new pool of clients that serve other services too
-			cc, err := localUtils.NewBinaryGenericClient("PeopleService")
+			cc, err := genericClients.NewBinaryGenericClient("PeopleService")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -65,7 +62,7 @@ var (
 	ccHTTPUserServicePool = &sync.Pool{
 		New: func() interface{} {
 			// since requires a NewThriftFileProvider(file_path)
-			cc, err := localUtils.NewHTTPGenericClient("UserService", "./thrift/user.thrift")
+			cc, err := genericClients.NewHTTPGenericClient("UserService", "./thrift/user.thrift")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -78,7 +75,7 @@ var (
 	ccHTTPBizServicePool = &sync.Pool{
 		New: func() interface{} {
 			// since requires a NewThriftFileProvider(file_path)
-			cc, err := localUtils.NewHTTPGenericClient("BizService", "./thrift/http.thrift")
+			cc, err := genericClients.NewHTTPGenericClient("BizService", "./thrift/http.thrift")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -91,7 +88,7 @@ var (
 	ccJSONPool = &sync.Pool{
 		New: func() interface{} {
 			// due to similarities of how servers are implemented, reusing orbital.thrift file
-			cc, err := localUtils.NewJSONGenericClient("JSONService", "./thrift/orbital.thrift")
+			cc, err := genericClients.NewJSONGenericClient("JSONService", "./thrift/orbital.thrift")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -103,7 +100,7 @@ var (
 	ccJSONProtoPool = &sync.Pool{
 		New: func() interface{} {
 			// due to similarities of how servers are implemented, reusing orbital.thrift file
-			cc, err := localUtils.NewJSONProtoGenericClient("JSONProtoService", "./thrift/mock.proto")
+			cc, err := genericClients.NewJSONProtoGenericClient("JSONProtoService", "./protobuf/mock.proto")
 			if err != nil {
 				log.Print("unable to generate new client")
 				return nil
@@ -122,31 +119,23 @@ var (
 		"jsonprotoservice": ccJSONProtoPool,
 	}
 
-	// local codec to be used for RegisterRouteBinaryGenericCall
+	// local codec to be used for RegisterRouteBinaryGenericCall/ caching
 	rc = utils.NewThriftMessageCodec()
 
-	// to handle the Nacos client
-	// nacosClient naming_client.INamingClient
+	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
+	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
 
-	// // to handle the available RPC instances
-	// instancesLock sync.RWMutex
-	// instances     = make(map[string][]string) // map to store discovered instances for each service
+	// TODO: rate limiting numbers
+	MaxQPS    = 1000000000 // Each IP address how many QPS
+	BurstSize = 1000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
 
-	// // IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
-	// limiterCache = cache.New(5*time.Minute, 6*time.Minute)
+	// TODO: cache time allowed before evicted from cache. i.e. how long stored in cache
+	cacheExpiryTime = 2 * time.Second
 
-	// // TODO: rate limiting numbers
-	// MaxQPS    = 1000000000 // Each IP address how many QPS
-	// BurstSize = 1000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
+	// cache counters
+	cacheHitCount, cacheMissCount int32
 
-	// // TODO: cache time allowed before evicted from cache. i.e. how long stored in cache
-	// cacheExpiryTime = 2 * time.Second
-
-	// // cache counters
-	// cacheHitCount, cacheMissCount int32
-
-	// new
-	instanceManager = localUtils.NewInstanceManager()
+	services = []string{"PeopleService", "UserService", "BizService", "JSONService", "JSONProtoService"}
 )
 
 func init() {
@@ -164,18 +153,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("Failed to create Nacos client: %v", err)
 	}
-
-	// REPEATED: to register the RPC instances on initialization, instead of having to wait a minute for it to be registered
-	services := []string{"PeopleService", "UserService", "BizService", "JSONService", "JSONProtoService"}
-
-	// go func() {
-	// 	// Refresh the service addresses every minute
-	// 	for _, service := range services {
-	// 		instancesLock.Lock()
-	// 		instances[service] = utils.DiscoverAddress(service)
-	// 		instancesLock.Unlock()
-	// 	}
-	// }()
 
 	//new
 	localUtils.AddInitialInstance(services)
@@ -211,26 +188,8 @@ func main() {
 	RegisterCacheRoute(h)
 	RegisterAuthRoute(h)
 
-	services := []string{"PeopleService", "UserService", "BizService", "JSONService", "JSONProtoService"}
-
-	// go func() {
-	// 	// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
-	// 	ticker := time.NewTicker(time.Minute)
-	// 	for {
-	// 		select {
-	// 		case <-ticker.C:
-	// 			// Refresh the service addresses every minute
-	// 			for _, service := range services {
-	// 				instancesLock.Lock()
-	// 				instances[service] = DiscoverAddress(service)
-	// 				instancesLock.Unlock()
-	// 			}
-	// 		}
-	// 	}
-	// }()
-
 	// new
-	instanceManager.RefreshInstances(services)
+	localUtils.RefreshInstances(services)
 
 	h.Spin()
 }
@@ -241,7 +200,7 @@ func main() {
 func RegisterRouteJSONGenericCall(h *server.Hertz) {
 	v1 := h.Group("/jsonservice")
 	{
-		v1.POST("/:method", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			methodName := c.Param("method")
 
 			path := string(c.Path())
@@ -290,7 +249,7 @@ func RegisterRouteJSONGenericCall(h *server.Hertz) {
 func RegisterRouteJSONProto(h *server.Hertz) {
 	v1 := h.Group("/jsonprotoservice")
 	{
-		v1.POST("/:method", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			methodName := c.Param("method")
 
 			path := string(c.Path())
@@ -333,15 +292,20 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 	}
 }
 
+type RequestData struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
 // for Binary generic call
 func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 	h.StaticFS("/", &app.FS{Root: "./", GenerateIndexPages: true})
 
-	h.GET("/get", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+	h.GET("/get", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusOK, "get")
 	}))
 
-	h.POST("/post", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+	h.POST("/post", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 		var requestData RequestData
 
 		// Bind and parse the request body into the requestData struct
@@ -400,65 +364,9 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 
 // for HTTP generic call. also dependent on how .thrift file is implemented!!
 func RegisterRouteHTTPGenericCall(h *server.Hertz) {
-	// h.StaticFS("/", &app.FS{Root: "./", GenerateIndexPages: true})
-	v1 := h.Group("/userservice")
-	{
-		v1.POST("/:userId", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
-			userId := c.Param("userId")
-
-			path := string(c.Path())
-			parts := strings.Split(path, "/")
-			// which here is userservice
-			serviceName := parts[1]
-
-			pool, ok := pools[serviceName]
-			if !ok {
-				// handle the case where there is no pool for the given service name
-				c.String(consts.StatusBadRequest, "Invalid service name")
-				return
-			}
-
-			cc := pool.Get().(genericclient.Client)
-			defer pool.Put(cc) // make sure to put the client back in the pool when done
-
-			data := c.GetRequest().BodyBytes()
-
-			var jsonData map[string]interface{}
-			err2 := json.Unmarshal(data, &jsonData)
-			if err2 != nil {
-				c.String(consts.StatusBadRequest, "Invalid JSON request data")
-				return
-			}
-
-			url := fmt.Sprintf("http://example.com/users/%s", userId)
-
-			// cannot get the current http request from argument c, and not a drastic overhead to just create a new http request.
-			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(data))
-			if err != nil {
-				klog.Errorf("new http request failed: %v", err)
-				return
-			}
-			req.Header.Set("token", "3")
-			customReq, err := generic.FromHTTPRequest(req)
-			if err != nil {
-				klog.Errorf("convert request failed: %v", err)
-				return
-			}
-			resp, err := cc.GenericCall(ctx, "", customReq)
-			if err != nil {
-				klog.Errorf("generic call failed: %v", err)
-				return
-			}
-			pool.Put(cc)
-
-			realResp := resp.(*generic.HTTPResponse)
-			c.String(consts.StatusOK, "UpdateUser response, status code: %v, body: %v\n", realResp.StatusCode, realResp.Body)
-		}))
-	}
-
 	v2 := h.Group("/bizservice")
 	{
-		v2.POST("/:method", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v2.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			method := c.Param("method")
 
 			path := string(c.Path())
@@ -530,7 +438,7 @@ func RegisterCacheRoute(h *server.Hertz) {
 	{
 		// exact same method as /post above. just to demonstrate power of caching
 		// in apache bench -> request if forwarded to backend RPC only ONCE -> result cached -> used for rest of benchmark.
-		v1.POST("/post", localUtils.RateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
+		v1.POST("/post", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
 			var requestData RequestData
 
 			err := c.Bind(&requestData)
