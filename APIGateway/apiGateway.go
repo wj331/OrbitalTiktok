@@ -248,6 +248,12 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 
 			bodyBytes := c.GetRequest().BodyBytes()
 
+			// TODO: improve this
+			if len(bodyBytes) == 0 {
+				c.String(consts.StatusBadRequest, "request body is empty")
+				return
+			}
+
 			jsonString := string(bodyBytes)
 
 			resp, err := cc.GenericCall(ctx, methodName, jsonString)
