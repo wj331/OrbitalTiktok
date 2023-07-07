@@ -167,7 +167,7 @@ func main() {
 	}
 
 	// register routes
-	RegisterRouteJSONGenericCall(h)
+	RegisterRouteJSONThrift(h)
 	RegisterRouteJSONProto(h)
 	RegisterRouteBinaryGenericCall(h)
 	RegisterRouteHTTPGenericCall(h)
@@ -181,7 +181,7 @@ func main() {
 }
 
 // for JSON generic call. MAIN use case for TikTok. Basically forwards the request that the API gateway receives directly to the RPC server.
-func RegisterRouteJSONGenericCall(h *server.Hertz) {
+func RegisterRouteJSONThrift(h *server.Hertz) {
 	v1 := h.Group("/jsonservice")
 	{
 		v1.POST("/:method", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {

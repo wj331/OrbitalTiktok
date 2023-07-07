@@ -26,12 +26,12 @@ Build and run the API Gateway:
 This API gateway serves as the single entry point into the system, dealing with HTTP requests from the clients, translating them into the appropriate RPC request formats, and forwarding these to the corresponding RPC servers. The response is then returned back to the client.
 
 It supports the following Generic Calls of Kitex:
-* JSON Mapping (thrift) Generic Call
+* JSON thrift Generic Call
 * HTTP Mapping Generic Call
 * Binary Generic Call
 
 As well as a newly implemented Generic Call feature:
-* JSON (protobuf) Generic Call
+* JSON Protobuf Generic Call
 
 This API Gateway and RPC servers natively support the newly built jsonproto_codec. In the `go.mod` file, there is the replacement line:
 `replace github.com/cloudwego/kitex => github.com/simbayippy/kitex v1.0.0`
