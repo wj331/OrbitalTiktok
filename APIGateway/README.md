@@ -14,9 +14,16 @@ Meanwhile, the utils folder contains:
 * implementations for Service Discovery of RPC servers
 * implementations of creating generic clients
 
-## Usage
+## Usage & Configurations
 To run the API Gateway:
 `go run .`
+
+You can configure the rate limiting, caching and service parameters:
+
+* `MaxQPS` is the maximum number of requests per second allowed from a single IP address.
+* `BurstSize` is the maximum number of events that can occur at once.
+* `cacheExpiryTime` is the duration for which data is stored in the cache.
+* `services` is the list of services currently available.
 
 ## Routes
 Routes are registered for each type of Generic Call. Below are the registered endpoints:
@@ -27,14 +34,6 @@ Routes are registered for each type of Generic Call. Below are the registered en
 * `/jsonprotoservice/:method`: Handles JSON Protobuf generic call.
 
 Each endpoint utilizes a middleware for rate limiting (based on IP address). Caching can also be configured to improve the performance of frequent identical requests.
-
-## Configuration
-You can configure the rate limiting and caching parameters:
-
-* `MaxQPS` is the maximum number of requests per second allowed from a single IP address.
-* `BurstSize` is the maximum number of events that can occur at once.
-* `cacheExpiryTime` is the duration for which data is stored in the cache.
-* `services` is the list of services currently available.
 
 ## Development
 * To add a new service, extend the pools map with the service name as key and the generic client pool as value.
