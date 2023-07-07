@@ -1,22 +1,25 @@
 # Orbital API Gateway
 This is an implementation of an API gateway that is a single point of entry into a system, built using cloudwego's Hertz and Kitex libraries. It routes requests to appropriate RPC servers simulating microservices, and employs caching and rate limiting strategies.
 
-## Getting Started (API Gateway)
-Follow the steps below to set up the API Gateway HTTP server.
-
 ### Prerequisites
 * Golang version 1.14 or newer.
 * A proper GOPATH environment.
 * [Kitex installed](https://www.cloudwego.io/docs/kitex/getting-started/)
+* [Nacos installed](https://nacos.io/en-us/docs/quick-start.html)
 
-### Installation
+Make sure that your Nacos server is running before continuing. 
+
+## Getting Started (API Gateway)
+Follow the steps below to set up the API Gateway HTTP server.
+
 Clone the repository to your local machine: <br>
 `git clone https://github.com/simbayippy/OrbitalxTiktok.git`
 
-Navigate into the cloned repository:
+### Installation
+Navigate into the api gateway folder:
 `cd OrbitalxTiktok/APIGateway`
 
-Then, build and run the API Gateway:
+Build and run the API Gateway:
 `go run .`
 
 ## Usage
@@ -27,15 +30,16 @@ It supports the following Generic Calls of Kitex:
 * HTTP Mapping Generic Call
 * Binary Generic Call
 
-As well as an additional, newly implemented Generic Call:
+As well as a newly implemented Generic Call feature:
 * JSON (protobuf) Generic Call
+
+This API Gateway and RPC servers natively support the newly built jsonproto_codec. In the `go.mod` file, there is the replacement line:
+`replace github.com/cloudwego/kitex => github.com/simbayippy/kitex v1.0.0`
 
 For the implementation of my Protobuf codec in the Kitex library, visit [here](https://github.com/simbayippy/kitex)
 
 ## Getting Started (RPC servers)
-Follow the steps below to set up the API Gateway HTTP server.
-
-Navigate into the cloned repository:
+Navigate into the RPC folder:
 `cd OrbitalxTiktok/RPCservers`
 
 Currently, 4 types of RPC servers have been built to handle the different Generic Calls:
@@ -43,5 +47,5 @@ Currently, 4 types of RPC servers have been built to handle the different Generi
 * HTTP RPC
 * Binary RPC
 
-and an additional:
+and the new addition:
 * JSON proto RPC
