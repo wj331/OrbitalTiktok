@@ -1,1 +1,17 @@
-{"Msg":"MockReq", "strMap":{"key1":"val1", "key2":"val2"}, "strList":["str1", "str2"]}
+{
+    "Msg": "MockReq",
+    "strMap": {
+        "key1": "This is a much larger value than before. It contains more data and will take up more space when sent over the network.",
+        "key2": "This is another large value. It is also much longer than the original and will also take up more space.",
+        "key3": "A third key and value to further increase the size of the payload.",
+        "key4": "A fourth key and value to further increase the size of the payload.",
+        "key5": "A fifth key and value to further increase the size of the payload."
+    },
+    "strList": [
+        "This is the first string in the array. It is longer than the original string and will therefore take up more space.",
+        "This is the second string in the array. Like the first, it is also longer and will take up more space.",
+        "This is the third string in the array. It adds further to the size of the payload.",
+        "This is the fourth string in the array. It adds even more to the size of the payload.",
+        "This is the fifth string in the array. It further increases the size of the payload."
+    ]
+}

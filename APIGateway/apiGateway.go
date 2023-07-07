@@ -122,8 +122,8 @@ var (
 	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
 
 	// TODO: rate limiting numbers
-	MaxQPS    = 1000000000 // Each IP address how many QPS
-	BurstSize = 1000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
+	MaxQPS    = 10000000000000 // Each IP address how many QPS
+	BurstSize = 10000000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
 
 	// TODO: cache time allowed before evicted from cache. i.e. how long stored in cache
 	cacheExpiryTime = 2 * time.Second
