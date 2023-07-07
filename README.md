@@ -5,8 +5,8 @@ This is an implementation of an API gateway that is a single point of entry into
 Follow the steps below to set up the Orbital API Gateway.
 
 ### Prerequisites
-*Golang version 1.14 or newer.
-*A proper GOPATH environment.
+* Golang version 1.14 or newer.
+* A proper GOPATH environment.
 
 ### Installation
 Clone the repository to your local machine:
