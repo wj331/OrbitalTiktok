@@ -1,5 +1,7 @@
 # Orbital API Gateway
-This is an implementation of an API gateway that is a single point of entry into a system, built using cloudwego's Hertz and Kitex libraries. It routes requests to appropriate RPC servers simulating microservices, and employs caching and rate limiting strategies.
+This is an implementation of an API gateway, built using cloudwego's Hertz and Kitex libraries. It routes requests to appropriate RPC servers simulating microservices, and employs caching and rate limiting strategies.
+
+In addition to completing the main assignment, I managed to implement the Protobuf codec. This repository contains the work as well as benchmark results of the API Gateway.
 
 ### Prerequisites
 * Golang version 1.14 or newer.
