@@ -19,7 +19,7 @@ Then, build and run the application:
 `go run .`
 
 ## Usage
-This API gateway serves as the single entry point into the system, dealing with HTTP requests from the clients, translating them into the appropriate RPC requests, and forwarding these to the corresponding microservices. The response is then returned back to the client.
+This API gateway serves as the single entry point into the system, dealing with HTTP requests from the clients, translating them into the appropriate RPC request formats, and forwarding these to the corresponding RPC servers. The response is then returned back to the client.
 
 It supports the following Generic Calls of Kitex:
 
