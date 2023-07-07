@@ -35,3 +35,11 @@ Follow the steps below to set up the API Gateway HTTP server.
 
 Navigate into the cloned repository:
 `cd OrbitalxTiktok/RPCservers`
+
+Currently, 4 types of RPC servers have been built to handle the different Generic Calls:
+* JSON Thrift RPC
+* HTTP RPC
+* Binary RPC
+
+and an additional:
+* JSON proto RPC
