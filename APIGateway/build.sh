@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-RUN_NAME="peopleService"
+RUN_NAME="hi"
 
 mkdir -p output/bin
 cp script/* output/
