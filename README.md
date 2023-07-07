@@ -9,7 +9,7 @@ Follow the steps below to set up the Orbital API Gateway.
 * A proper GOPATH environment.
 
 ### Installation
-Clone the repository to your local machine:
+Clone the repository to your local machine: <br>
 `git clone https://github.com/simbayippy/OrbitalxTiktok/APIGateway.git`
 
 Navigate into the cloned repository:
