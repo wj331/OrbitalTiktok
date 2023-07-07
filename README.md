@@ -2,7 +2,7 @@
 This is an implementation of an API gateway that is a single point of entry into a system, used for TikTok's architecture. It routes requests to appropriate microservices, employing caching and rate limiting strategies.
 
 ## Getting Started
-Follow the steps below to set up the Orbital API Gateway.
+Follow the steps below to set up the API Gateway HTTP server.
 
 ### Prerequisites
 * Golang version 1.14 or newer.
