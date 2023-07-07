@@ -12,10 +12,10 @@ Make sure that your Nacos server is running before continuing.
 ## Getting Started (API Gateway)
 Follow the steps below to set up the API Gateway HTTP server.
 
+### Installation
 Clone the repository to your local machine: <br>
 `git clone https://github.com/simbayippy/OrbitalxTiktok.git`
 
-### Installation
 Navigate into the api gateway folder:
 `cd OrbitalxTiktok/APIGateway`
 
