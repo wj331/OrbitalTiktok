@@ -60,4 +60,4 @@ Benchmarking was done using apache bench, with the configuration of:
 Command: <br>
 `ab -n 150000 -c 100 -k -p test/postDataProto.json -T 'application/json' http://127.0.0.1:8080/jsonprotoservice/Test`
 
-![Result](https://drive.google.com/file/d/11hODFCKjnyw21ncRZ7KIo3Wfy7cXBVf3/view?usp=sharing)
+![Result](benchmark-results/200k.png)
