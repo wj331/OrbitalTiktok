@@ -7,11 +7,11 @@
 6. Response caching with go-cache and hertz.
 7. Request Pooling: The API Gateway has been optimized, using a pool of generic clients instead of creating new clients every request.
 
-### Usage
+## Usage
 To run the API Gateway:
 `go run .`
 
-### Routes
+## Routes
 Routes are registered for each type of Generic Call. Below are the registered endpoints:
 * `/jsonservice/:method`: Handles JSON Thrift generic call.
 * `/bizservice/:method`: Handles HTTP generic call.
