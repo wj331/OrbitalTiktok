@@ -10,19 +10,23 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
+type ServiceInstances struct {
+	sync.RWMutex
+	Instances []string
+}
+
 var (
 	NacosClient naming_client.INamingClient
 
 	// to handle the available RPC instances
-	instancesLock sync.RWMutex
-	instances     = make(map[string][]string) // map to store discovered instances for each service
+	instances = make(map[string]*ServiceInstances)
 )
 
 func AddInitialInstance(services []string) {
 	for _, service := range services {
-		instancesLock.Lock()
-		instances[service] = discoverAddress(service)
-		instancesLock.Unlock()
+		instances[service] = &ServiceInstances{
+			Instances: discoverAddress(service),
+		}
 	}
 }
 
@@ -33,11 +37,11 @@ func RefreshInstances(services []string) {
 		for {
 			select {
 			case <-ticker.C:
-				// Refresh the service addresses every minute
 				for _, service := range services {
-					instancesLock.Lock()
-					instances[service] = discoverAddress(service) // DiscoverAddress must be a global function
-					instancesLock.Unlock()
+					serviceInstances := instances[service]
+					serviceInstances.Lock()
+					serviceInstances.Instances = discoverAddress(service)
+					serviceInstances.Unlock()
 				}
 			}
 		}
@@ -45,11 +49,12 @@ func RefreshInstances(services []string) {
 }
 
 func GetInstances(service string) []string {
-	instancesLock.RLock()
-	instances := instances[service]
-	instancesLock.RUnlock()
+	serviceInstances := instances[service]
+	serviceInstances.RLock()
+	serviceInstancesInstances := serviceInstances.Instances
+	serviceInstances.RUnlock()
 
-	return instances
+	return serviceInstancesInstances
 }
 
 func discoverAddress(serviceName string) []string {
@@ -62,8 +67,10 @@ func discoverAddress(serviceName string) []string {
 		ServiceName: serviceName,
 	})
 	if err != nil {
-		log.Fatalf("Failed to discover services: %v", err)
-		return nil
+		prevInstances := GetInstances(serviceName)
+		log.Printf("Failed to discover services: %v", err)
+		// Return the previously known instances (if any) instead of exiting the application
+		return prevInstances
 	}
 
 	var instances []string
@@ -72,7 +79,7 @@ func discoverAddress(serviceName string) []string {
 		instances = append(instances, address)
 	}
 
-	fmt.Printf("valid RPC's for %v are: %v\n\n", serviceName, instances)
+	log.Printf("\nvalid RPC's for %v are: %v\n", serviceName, instances)
 
 	return instances
 }

@@ -12,6 +12,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	_ "net/http/pprof"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/server/basic_auth"
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -152,6 +154,9 @@ func init() {
 }
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
 
 	/*
