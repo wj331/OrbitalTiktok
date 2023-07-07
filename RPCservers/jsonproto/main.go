@@ -33,6 +33,7 @@ func (g *ProtoServiceImpl) GenericCall(ctx context.Context, method string, reque
 		klog.Fatal(err)
 	}
 
+	// log.Printf("Request received! \n")
 	// send back a simple response
 	toReturn := &protopackage.StringResponse{
 		Response: "hello",
@@ -61,7 +62,7 @@ func main() {
 		panic(err)
 	}
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 5; i++ {
 		port := 8928 + i
 		svr := genericserver.NewServer(
 			new(ProtoServiceImpl),
