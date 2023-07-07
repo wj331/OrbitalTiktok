@@ -1,9 +1,9 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
-
 	"sync"
 
 	httpServer "github.com/simbayippy/OrbitalxTiktok/RPCservers/http/kitex_gen/http/bizservice"
@@ -15,8 +15,6 @@ import (
 
 	"github.com/cloudwego/kitex/server"
 
-	"context"
-
 	http "github.com/simbayippy/OrbitalxTiktok/RPCservers/http/kitex_gen/http"
 
 	// "github.com/cloudwego/kitex/pkg/generic"
@@ -25,28 +23,23 @@ import (
 
 type BizServiceImpl struct{}
 
-// handlers for http.thrift
-
-// BizMethod1 implements the BizServiceImpl interface.
+// handlers
 func (s *BizServiceImpl) BizMethod1(ctx context.Context, req *http.BizRequest) (resp *http.BizResponse, err error) {
 	klog.Infof("BizMethod1 called, request: %#v", req)
 	return &http.BizResponse{HttpCode: 200, Text: "Method1 response", Token: 1111}, nil
 }
 
-// BizMethod2 implements the BizServiceImpl interface.
 func (s *BizServiceImpl) BizMethod2(ctx context.Context, req *http.BizRequest) (resp *http.BizResponse, err error) {
 	klog.Infof("BizMethod2 called, request: %#v", req)
 	return &http.BizResponse{HttpCode: 200, Text: "Method2 response", Token: 2222}, nil
 }
 
-// BizMethod3 implements the BizServiceImpl interface.
 func (s *BizServiceImpl) BizMethod3(ctx context.Context, req *http.BizRequest) (resp *http.BizResponse, err error) {
 	klog.Infof("BizMethod3 called, request: %#v", req)
 	return &http.BizResponse{HttpCode: 200, Text: "Method3 response", Token: 3333}, nil
 }
 
 func main() {
-
 	r, err := registry.NewDefaultNacosRegistry()
 	if err != nil {
 		panic(err)
@@ -55,7 +48,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	// HTTP servers
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 4; i++ {
 		port := 8898 + i
 		svr := httpServer.NewServer(
 			new(BizServiceImpl),

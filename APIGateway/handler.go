@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	orbital "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital"
-	protopackage "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/protopackage"
 )
 
 var (
@@ -48,10 +47,4 @@ func (s *PeopleServiceImpl) Echo(ctx context.Context, req *orbital.Request) (res
 func (s *PeopleServiceImpl1) Echo(ctx context.Context, req *orbital.Request) (resp *orbital.Response, err error) {
 	// TODO: Your code here...
 	return &orbital.Response{Message: req.Message}, nil
-}
-
-// Test implements the MockImpl interface.
-func (s *MockImpl) Test(ctx context.Context, req *protopackage.MockReq) (resp *protopackage.StringResponse, err error) {
-	// TODO: Your code here...
-	return
 }

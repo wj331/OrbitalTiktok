@@ -16,7 +16,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/middlewares/server/basic_auth"
 	"github.com/cloudwego/hertz/pkg/app/server"
 
-	// hertzUtils "github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	hertzCache "github.com/hertz-contrib/cache"
@@ -31,19 +30,16 @@ import (
 	orbital "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
-	// "github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
 	// imported as `cache`
 	"github.com/patrickmn/go-cache"
 
-	// new
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils/genericClients"
 )
 
-// local variables for **OPTIMIZATION**
 var (
 	// creating a pool of generic binary clients
 	ccBinaryPool = &sync.Pool{
@@ -99,7 +95,6 @@ var (
 
 	ccJSONProtoPool = &sync.Pool{
 		New: func() interface{} {
-			// due to similarities of how servers are implemented, reusing orbital.thrift file
 			cc, err := genericClients.NewJSONProtoGenericClient("JSONProtoService", "./protobuf/mock.proto")
 			if err != nil {
 				log.Print("unable to generate new client")
@@ -109,8 +104,7 @@ var (
 		},
 	}
 
-	// then a mapping of all the pools. O(1) to get the pool to use in GO, so it's very efficient.
-	// small capital letter for path of apigateway such as api/peopleservice/methodname
+	// then a mapping of all the pools. O(1) to get the pool to use in GO -> very efficient.
 	pools = map[string]*sync.Pool{
 		"peopleservice":    ccBinaryPool,
 		"userservice":      ccHTTPUserServicePool,
@@ -140,9 +134,7 @@ var (
 
 func init() {
 
-	// initializes the nacos client: used for service registry (RPC servers) and discovery (this API gateway)
 	var err error
-	// New
 	localUtils.NacosClient, err = clients.NewNamingClient(
 		vo.NacosClientParam{
 			ServerConfigs: []constant.ServerConfig{
@@ -154,12 +146,12 @@ func init() {
 		log.Fatalf("Failed to create Nacos client: %v", err)
 	}
 
-	//new
+	// .RefreshInstances() only starts after 1 minute. calling this method allows it such that
+	// the available RPC instances are registered immediately when API gateway is spun up.
 	localUtils.AddInitialInstance(services)
 }
 
 func main() {
-	// using Hertz library to generate new Hertz server
 	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
 
 	/*
@@ -203,7 +195,6 @@ func RegisterRouteJSONGenericCall(h *server.Hertz) {
 
 			path := string(c.Path())
 			parts := strings.Split(path, "/")
-			// which here is userservice
 			serviceName := parts[1]
 
 			pool, ok := pools[serviceName]
@@ -228,15 +219,12 @@ func RegisterRouteJSONGenericCall(h *server.Hertz) {
 
 			jsonString := string(bodyBytes)
 
-			// methodName string is case sensitive as per implementation of RPC server
 			resp, err := cc.GenericCall(ctx, methodName, jsonString)
 			if err != nil {
-				// if method name does not exist, logged here.
 				klog.Errorf("generic call failed: %v", err)
 				return
 			}
 
-			// putting client back into pool after generic call is called
 			pool.Put(cc)
 
 			c.String(consts.StatusOK, "response is: %v", resp)
@@ -252,12 +240,10 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 
 			path := string(c.Path())
 			parts := strings.Split(path, "/")
-			// which here is userservice
 			serviceName := parts[1]
 
 			pool, ok := pools[serviceName]
 			if !ok {
-				// handle the case where there is no pool for the given service name
 				c.String(consts.StatusBadRequest, "Invalid service name")
 				return
 			}
@@ -266,23 +252,16 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 			cc := pool.Get().(genericclient.Client)
 			defer pool.Put(cc) // make sure to put the client back in the pool when done
 
-			// request should have a json string in it
 			bodyBytes := c.GetRequest().BodyBytes()
 
-			// convert bodyBytes to string, should be in json format
 			jsonString := string(bodyBytes)
 
-			// fmt.Printf("\nLog: (API Gateway) data received in string form is: %v\n", jsonString)
-
-			// methodName string is case sensitive as per implementation of RPC server
 			resp, err := cc.GenericCall(ctx, methodName, jsonString)
 			if err != nil {
-				// if method name does not exist, logged here.
 				klog.Errorf("generic call failed: %v", err)
 				return
 			}
 
-			// putting client back into pool after generic call is called
 			pool.Put(cc)
 
 			c.String(consts.StatusOK, "response is: %v", resp)
@@ -290,7 +269,7 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 	}
 }
 
-// for HTTP generic call. also dependent on how .thrift file is implemented!!
+// for HTTP generic call
 func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 	v2 := h.Group("/bizservice")
 	{
@@ -304,7 +283,6 @@ func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 
 			pool, ok := pools[serviceName]
 			if !ok {
-				// handle the case where there is no pool for the given service name
 				c.String(consts.StatusBadRequest, "Invalid service name")
 				return
 			}
@@ -379,11 +357,6 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 		// Create a Person object from the request data
 		person := &orbital.PeopleServiceEditPersonArgs{Person: &orbital.Person{Name: name, Age: int32(age)}}
 
-		// fmt.Printf("Name is: %v, Age is %v\n\n", name, age)
-
-		// **SERIALIZING**
-
-		// **OPTIMIZATION** created a pool of clients and getting from the pool instead of generating new client every request
 		cc := ccBinaryPool.Get().(genericclient.Client)
 		defer ccBinaryPool.Put(cc) // make sure to put the client back in the pool when done
 
