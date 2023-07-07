@@ -43,7 +43,34 @@ import (
 )
 
 var (
-	// creating a pool of generic binary clients
+	/*
+		configurations
+	*/
+
+	// set to true to enable caching on ALL endpoints
+	// set to false for benchmark testing purposes
+	enableCaching = false
+
+	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
+	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
+
+	// rate limiting numbers
+	MaxQPS    = 10000000000000 // Each IP address how many QPS
+	BurstSize = 10000000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
+
+	// cache time allowed before evicted from cache. i.e. how long stored in cache
+	cacheExpiryTime = 2 * time.Second
+
+	// cache counters
+	cacheHitCount, cacheMissCount int32
+
+	services = []string{"PeopleService", "BizService", "JSONService", "JSONProtoService"}
+
+	/*
+		generic client pools
+	*/
+
+	// generic binary clients
 	ccBinaryPool = &sync.Pool{
 		New: func() interface{} {
 			// TODO, create a new pool of clients that serve other services too
@@ -55,21 +82,7 @@ var (
 			return cc
 		},
 	}
-
-	// creating a pool of generic HTTP clients for service: UserService
-	ccHTTPUserServicePool = &sync.Pool{
-		New: func() interface{} {
-			// since requires a NewThriftFileProvider(file_path)
-			cc, err := genericClients.NewHTTPGenericClient("UserService", "./thrift/user.thrift")
-			if err != nil {
-				log.Print("unable to generate new client")
-				return nil
-			}
-			return cc
-		},
-	}
-
-	// creating a pool of generic HTTP clients for service: UserService
+	// generic HTTP clients
 	ccHTTPBizServicePool = &sync.Pool{
 		New: func() interface{} {
 			// since requires a NewThriftFileProvider(file_path)
@@ -81,8 +94,7 @@ var (
 			return cc
 		},
 	}
-
-	// creating a pool of generic HTTP clients for service: UserService
+	// generic JSON (thrift) clients
 	ccJSONPool = &sync.Pool{
 		New: func() interface{} {
 			// due to similarities of how servers are implemented, reusing orbital.thrift file
@@ -94,7 +106,7 @@ var (
 			return cc
 		},
 	}
-
+	// generic JSON (proto) clients
 	ccJSONProtoPool = &sync.Pool{
 		New: func() interface{} {
 			cc, err := genericClients.NewJSONProtoGenericClient("JSONProtoService", "./protobuf/mock.proto")
@@ -105,11 +117,9 @@ var (
 			return cc
 		},
 	}
-
-	// then a mapping of all the pools. O(1) to get the pool to use in GO -> very efficient.
+	// A mapping of all the pools. O(1) to get the pool to use in GO -> very efficient.
 	pools = map[string]*sync.Pool{
 		"peopleservice":    ccBinaryPool,
-		"userservice":      ccHTTPUserServicePool,
 		"bizservice":       ccHTTPBizServicePool,
 		"jsonservice":      ccJSONPool,
 		"jsonprotoservice": ccJSONProtoPool,
@@ -117,25 +127,9 @@ var (
 
 	// local codec to be used for RegisterRouteBinaryGenericCall/ caching
 	rc = utils.NewThriftMessageCodec()
-
-	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
-	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
-
-	// TODO: rate limiting numbers
-	MaxQPS    = 10000000000000 // Each IP address how many QPS
-	BurstSize = 10000000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
-
-	// TODO: cache time allowed before evicted from cache. i.e. how long stored in cache
-	cacheExpiryTime = 2 * time.Second
-
-	// cache counters
-	cacheHitCount, cacheMissCount int32
-
-	services = []string{"PeopleService", "UserService", "BizService", "JSONService", "JSONProtoService"}
 )
 
 func init() {
-
 	var err error
 	localUtils.NacosClient, err = clients.NewNamingClient(
 		vo.NacosClientParam{
@@ -147,7 +141,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("Failed to create Nacos client: %v", err)
 	}
-
 	// .RefreshInstances() only starts after 1 minute. calling this method allows it such that
 	// the available RPC instances are registered immediately when API gateway is spun up.
 	localUtils.AddInitialInstance(services)
@@ -159,25 +152,21 @@ func main() {
 	}()
 	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
 
-	/*
-		Uncomment the following lines if want to use caching on ALL endpoints.
-		Commented out to see performance in AB, as with caching technically only 1 request will be sent to RPC.
-	*/
-
-	// memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	// h.Use(hertzCache.NewCacheByRequestURI(
-	// 	memoryStore,
-	// 	2*time.Second,
-	// 	hertzCache.WithOnHitCache(func(ctx context.Context, c *app.RequestContext) {
-	// 		atomic.AddInt32(&cacheHitCount, 1)
-	// 	}),
-	// 	hertzCache.WithOnMissCache(func(ctx context.Context, c *app.RequestContext) {
-	// 		atomic.AddInt32(&cacheMissCount, 1)
-	// 	}),
-	// ))
+	if enableCaching {
+		memoryStore := persist.NewMemoryStore(1 * time.Minute)
+		h.Use(hertzCache.NewCacheByRequestURI(
+			memoryStore,
+			2*time.Second,
+			hertzCache.WithOnHitCache(func(ctx context.Context, c *app.RequestContext) {
+				atomic.AddInt32(&cacheHitCount, 1)
+			}),
+			hertzCache.WithOnMissCache(func(ctx context.Context, c *app.RequestContext) {
+				atomic.AddInt32(&cacheMissCount, 1)
+			}),
+		))
+	}
 
 	// register routes
-
 	RegisterRouteJSONGenericCall(h)
 	RegisterRouteJSONProto(h)
 	RegisterRouteBinaryGenericCall(h)
