@@ -30,7 +30,7 @@ It supports the following Generic Calls of Kitex:
 As well as an additional, newly implemented Generic Call:
 * JSON (protobuf) Generic Call
 
-for the logic of my implementation of the Protobuf codec, visit [here](https://github.com/simbayippy/kitex)
+For the implementation of my Protobuf codec in the Kitex library, visit [here](https://github.com/simbayippy/kitex)
 
 ## Getting Started (RPC servers)
 Follow the steps below to set up the API Gateway HTTP server.
