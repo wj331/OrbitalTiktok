@@ -53,10 +53,11 @@ and the new addition:
 ## Benchmarking
 Benchmarking was done using Apache Bench, on the newly created JSON (Proto) Generic Call
 
-Configuration of benchmark:
+### Configuration of benchmark:
 * 200000 requests
 * concurrency level: 100
 * HTTP keep alive enabled: -k flag set
+* JSON file used in request body (1,118 bytes): `APIGateway/test/postDataProto.json`
 
 Command used: <br>
 `ab -n 150000 -c 100 -k -p test/postDataProto.json -T 'application/json' http://127.0.0.1:8080/jsonprotoservice/Test`
