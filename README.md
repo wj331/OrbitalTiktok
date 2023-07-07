@@ -50,16 +50,17 @@ Currently, 4 types of RPC servers have been built to handle the different Generi
 and the new addition:
 * JSON proto RPC
 
-## Benchmarking & Results
+## Benchmarking
 Benchmarking was done using apache bench, with the configuration of:
 
 * 200000 requests
 * concurrency level: 10
 * HTTP keep alive enabled: -k flag set
 
-Command: <br>
+Command used: <br>
 `ab -n 150000 -c 100 -k -p test/postDataProto.json -T 'application/json' http://127.0.0.1:8080/jsonprotoservice/Test`
 
+### Results
 <div align="center">
     <img src="benchmark-results/200k.png" alt="Result" width="400">
 </div>
