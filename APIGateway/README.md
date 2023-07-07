@@ -7,6 +7,13 @@
 6. Response caching with go-cache and hertz.
 7. Request Pooling: The API Gateway has been optimized, using a pool of generic clients instead of creating new clients every request.
 
+## Code structure 
+Implementation for API Gateway lies in `apiGateway.go`
+
+Meanwhile, the utils folder contains:
+* implementations for Service Discovery of RPC servers
+* implementations of creating generic clients
+
 ## Usage
 To run the API Gateway:
 `go run .`
@@ -29,6 +36,6 @@ You can configure the rate limiting and caching parameters:
 * `cacheExpiryTime` is the duration for which data is stored in the cache.
 * `services` is the list of services currently available.
 
-### Development
+## Development
 * To add a new service, extend the pools map with the service name as key and the generic client pool as value.
 * To register a new route, follow the format of the existing RegisterRoute functions.
