@@ -33,5 +33,5 @@ As well as an additional, newly implemented Generic Call:
 ## Getting Started (RPC servers)
 Follow the steps below to set up the API Gateway HTTP server.
 
-Navigate into the cloned repository:
+Navigate into the cloned repository: <br>
 `cd OrbitalxTiktok/RPCservers`
