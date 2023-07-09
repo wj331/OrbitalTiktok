@@ -13,13 +13,6 @@ import (
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-// var (
-// 	// to handle the available RPC instances
-// 	instancesLock sync.RWMutex
-// 	instances     = make(map[string][]string) // map to store discovered instances for each service
-
-// )
-
 func NewBinaryGenericClient(destServiceName string) (genericclient.Client, error) {
 	// **PRE-OPTIMIZATION**
 	// instances := DiscoverAddress(destServiceName)

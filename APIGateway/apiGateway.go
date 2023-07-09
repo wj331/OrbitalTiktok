@@ -148,6 +148,7 @@ func init() {
 
 func main() {
 	go func() {
+		// this is just for pprof
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
@@ -194,7 +195,7 @@ func RegisterRouteJSONThrift(h *server.Hertz) {
 			pool, ok := pools[serviceName]
 			if !ok {
 				// handle the case where there is no pool for the given service name
-				c.String(consts.StatusBadRequest, "Invalid service name")
+				c.JSON(consts.StatusBadRequest, "Invalid service name")
 				return
 			}
 
@@ -207,7 +208,7 @@ func RegisterRouteJSONThrift(h *server.Hertz) {
 			// checks if the request contains anything.
 			// TODO: improve this
 			if len(bodyBytes) == 0 {
-				c.String(consts.StatusBadRequest, "request body is empty")
+				c.JSON(consts.StatusBadRequest, "request body is empty")
 				return
 			}
 
@@ -215,13 +216,13 @@ func RegisterRouteJSONThrift(h *server.Hertz) {
 
 			resp, err := cc.GenericCall(ctx, methodName, jsonString)
 			if err != nil {
-				klog.Errorf("generic call failed: %v", err)
+				c.JSON(consts.StatusBadRequest, err)
 				return
 			}
 
 			pool.Put(cc)
 
-			c.String(consts.StatusOK, "response is: %v", resp)
+			c.JSON(consts.StatusOK, resp)
 		}))
 	}
 }
@@ -238,7 +239,7 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 
 			pool, ok := pools[serviceName]
 			if !ok {
-				c.String(consts.StatusBadRequest, "Invalid service name")
+				c.JSON(consts.StatusBadRequest, "Invalid service name")
 				return
 			}
 
@@ -250,7 +251,7 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 
 			// TODO: improve this
 			if len(bodyBytes) == 0 {
-				c.String(consts.StatusBadRequest, "request body is empty")
+				c.JSON(consts.StatusBadRequest, "request body is empty")
 				return
 			}
 
@@ -258,13 +259,13 @@ func RegisterRouteJSONProto(h *server.Hertz) {
 
 			resp, err := cc.GenericCall(ctx, methodName, jsonString)
 			if err != nil {
-				klog.Errorf("generic call failed: %v", err)
+				c.JSON(consts.StatusBadRequest, err)
 				return
 			}
 
 			pool.Put(cc)
 
-			c.String(consts.StatusOK, "response is: %v", resp)
+			c.JSON(consts.StatusOK, resp)
 		}))
 	}
 }
@@ -283,7 +284,7 @@ func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 
 			pool, ok := pools[serviceName]
 			if !ok {
-				c.String(consts.StatusBadRequest, "Invalid service name")
+				c.JSON(consts.StatusBadRequest, "Invalid service name")
 				return
 			}
 
@@ -295,7 +296,7 @@ func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 			var jsonData map[string]interface{}
 			err2 := json.Unmarshal(data, &jsonData)
 			if err2 != nil {
-				c.String(consts.StatusBadRequest, "Invalid JSON request data")
+				c.JSON(consts.StatusBadRequest, "Invalid JSON request data")
 				return
 			}
 
@@ -315,13 +316,13 @@ func RegisterRouteHTTPGenericCall(h *server.Hertz) {
 			}
 			resp, err := cc.GenericCall(ctx, "", customReq)
 			if err != nil {
-				klog.Errorf("generic call failed: %v", err)
+				c.JSON(consts.StatusBadRequest, err)
 				return
 			}
 			pool.Put(cc)
 
-			realResp := resp.(*generic.HTTPResponse)
-			c.String(consts.StatusOK, "UpdateUser response, status code: %v, body: %v\n", realResp.StatusCode, realResp.Body)
+			// realResp := resp.(*generic.HTTPResponse)
+			c.JSON(consts.StatusOK, resp)
 		}))
 	}
 }
@@ -336,7 +337,7 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 	h.StaticFS("/", &app.FS{Root: "./", GenerateIndexPages: true})
 
 	h.GET("/get", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
-		c.String(consts.StatusOK, "get")
+		c.JSON(consts.StatusOK, "get")
 	}))
 
 	h.POST("/post", rateLimitMiddleware(func(ctx context.Context, c *app.RequestContext) {
@@ -346,7 +347,7 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 		err := c.Bind(&requestData)
 		if err != nil {
 			// Handle error if the request body parsing fails
-			c.String(consts.StatusBadRequest, "Invalid request body")
+			c.JSON(consts.StatusBadRequest, "Invalid request body")
 			return
 		}
 
@@ -370,7 +371,7 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 		// GenericCall feature of kitex to "generically" call this method in the RPC server
 		resp, err := cc.GenericCall(ctx, "editPerson", buf)
 		if err != nil {
-			klog.Errorf("method call editPerson failed: %w", err)
+			c.JSON(consts.StatusBadRequest, err)
 			return
 		}
 
@@ -387,7 +388,7 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 		}
 
 		// Send a response
-		c.String(consts.StatusOK, "all okay")
+		c.JSON(consts.StatusOK, "all okay")
 	}))
 }
 
@@ -414,7 +415,7 @@ func RegisterCacheRoute(h *server.Hertz) {
 
 			err := c.Bind(&requestData)
 			if err != nil {
-				c.String(consts.StatusBadRequest, "Invalid request body")
+				c.JSON(consts.StatusBadRequest, "Invalid request body")
 				return
 			}
 
@@ -433,7 +434,7 @@ func RegisterCacheRoute(h *server.Hertz) {
 
 			resp, err := cc.GenericCall(ctx, "editPerson", buf)
 			if err != nil {
-				klog.Errorf("method call editPerson failed: %w", err)
+				c.JSON(consts.StatusBadRequest, err)
 				return
 			}
 
@@ -446,7 +447,7 @@ func RegisterCacheRoute(h *server.Hertz) {
 				return
 			}
 
-			c.String(consts.StatusOK, "all okay")
+			c.JSON(consts.StatusOK, resp)
 		}))
 		// if response is in cache
 		v1.GET("/get_hit_count", func(ctx context.Context, c *app.RequestContext) {
