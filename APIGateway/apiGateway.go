@@ -19,8 +19,6 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
-	// imported as `cache`
-
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/genericClients"
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/routes"
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"

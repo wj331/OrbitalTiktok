@@ -7,11 +7,10 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"github.com/cloudwego/kitex/client/genericclient"
-	// imported as `cache`
+
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 

@@ -16,9 +16,6 @@ import (
 	"github.com/cloudwego/kitex/pkg/utils"
 
 	orbital "github.com/simbayippy/OrbitalxTiktok/APIGateway/kitex_gen/orbital"
-
-	// imported as `cache`
-
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
