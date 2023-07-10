@@ -28,12 +28,11 @@ type ProtoServiceImpl struct {
 // request is a string representation of the protobuf message
 func (g *ProtoServiceImpl) GenericCall(ctx context.Context, method string, request interface{}) (response interface{}, err error) {
 	m := request.(string)
+	log.Printf("\nRequest received! \n")
 	var mockReq protopackage.MockReq
 	if err := json.Unmarshal([]byte(m), &mockReq); err != nil {
 		klog.Fatal(err)
 	}
-
-	// log.Printf("Request received! \n")
 	// send back a simple response
 	toReturn := &protopackage.StringResponse{
 		Response: "hello",

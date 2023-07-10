@@ -28,6 +28,7 @@ type GenericServiceImpl struct{}
 
 func (g *GenericServiceImpl) GenericCall(ctx context.Context, method string, request interface{}) (response interface{}, err error) {
 	m := request.(string)
+	log.Printf("\nRequest received! \n")
 	var person orbital.Person
 	if err := json.Unmarshal([]byte(m), &person); err != nil {
 		klog.Fatal(err)
