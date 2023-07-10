@@ -72,8 +72,7 @@ var (
 	/*
 		Caching
 	*/
-	// Set true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
-	enableCaching = false
+	enableCaching = false // Set true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
 
 	// cache time allowed before evicted from cache. i.e. how long stored in cache
 	cacheExpiryTime = 2 * time.Second
@@ -82,7 +81,7 @@ var (
 	/*
 		Rate limiting
 	*/
-	MaxQPS    = 10000000000000
+	MaxQPS    = 10000000000000 // set high for benchmarking testing
 	BurstSize = 10000000000000
 )
 
