@@ -75,16 +75,15 @@ var (
 		Caching
 	*/
 
-	// set to true to enable caching on ALL endpoints
-	// default set to false for benchmarking purposes
+	// Set to true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
 	enableCaching = false
 
 	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
 	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
 
-	// rate limiting numbers
+	// rate limiting numbers. set HIGH for benchmark purposes
 	MaxQPS    = 10000000000000 // Each IP address how many QPS
-	BurstSize = 10000000000000 // number of events that can occur at ONCE. set HIGH for benchmark purposes
+	BurstSize = 10000000000000 // number of events that can occur at ONCE
 
 	// cache time allowed before evicted from cache. i.e. how long stored in cache
 	cacheExpiryTime = 2 * time.Second
@@ -92,7 +91,7 @@ var (
 	// cache counters
 	cacheHitCount, cacheMissCount int32
 
-	// local codec to be used for RegisterRouteBinaryGenericCall/ caching
+	// codec to be used specifically for RegisterRouteBinaryGenericCall
 	rc = utils.NewThriftMessageCodec()
 )
 
@@ -137,6 +136,7 @@ func newClientPool(serviceName string, protoFilePath string) *sync.Pool {
 				cc  genericclient.Client
 				err error
 			)
+			// TODO: change it to integer values
 			switch serviceName {
 			case "PeopleService":
 				cc, err = genericClients.NewBinaryGenericClient(serviceName)
