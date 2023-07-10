@@ -45,11 +45,11 @@ type ServiceDetails struct {
 	FilePath string
 }
 
-/*
-configurations
-*/
+// configurations
 var (
-	//	generic client pools
+	/*
+		Mapping of service & IDL's
+	*/
 	pools = map[string]*sync.Pool{}
 
 	services = map[string][]ServiceDetails{
@@ -69,7 +69,11 @@ var (
 		},
 	}
 
-	servicesNames = []string{"PeopleService", "BizService", "JSONService", "JSONProtoService"}
+	serviceNames []string
+
+	/*
+		Caching
+	*/
 
 	// set to true to enable caching on ALL endpoints
 	// default set to false for benchmarking purposes
@@ -105,13 +109,18 @@ func init() {
 	if err != nil {
 		klog.Fatalf("Failed to create Nacos client: %v", err)
 	}
-	// .RefreshInstances() only starts after 1 minute. calling this method allows it such that
-	// the available RPC instances are registered immediately when API gateway is spun up.
-	localUtils.AddInitialInstance(servicesNames)
 
-	pools = make(map[string]*sync.Pool)
+	// get all available service names
+	serviceNames = make([]string, 0, len(services))
+	for serviceName := range services {
+		serviceNames = append(serviceNames, serviceName)
+	}
+
+	// Immediately adds all valid RPC instances for all services.
+	localUtils.AddInitialInstance(serviceNames)
 
 	// initializing of generic client pools upon apigateway startup
+	pools = make(map[string]*sync.Pool)
 	for serviceName, details := range services {
 		// Set up pools for each version of this service
 		for _, detail := range details {
@@ -176,7 +185,7 @@ func main() {
 	RegisterAuthRoute(h)
 
 	// updates instances of services every minute
-	localUtils.RefreshInstances(servicesNames)
+	localUtils.RefreshInstances(serviceNames)
 
 	h.Spin()
 }
