@@ -123,6 +123,11 @@ func main() {
 	h.Spin()
 }
 
+/*
+	Left the basic route handlers as per documentation of Kitex here.
+	Abstracted away main implementations to pkg/routes
+*/
+
 // RegisterCacheRoute: to demonstrate caching
 // Caching: as long as request URI is the same -> immediately returns cached response -> improve response times
 func RegisterCacheRoute(h *server.Hertz) {
