@@ -65,7 +65,7 @@ Command used: <br>
 `ab -n 150000 -c 100 -k -p test/postDataProto.json -T 'application/json' http://127.0.0.1:8080/jsonprotoservice/Test`
 
 ### Results:
-Time per request across all concurrent requests: 0.030ms
+Time per request across all concurrent requests: 0.026ms
 
 <div align="center">
     <img src="benchmark-results/200k.png" alt="Result" width="400">
