@@ -16,7 +16,7 @@ import (
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-func NewJSONProtoGenericClient(destServiceName string, protoFilePath string) (genericclient.Client, error) {
+func newJSONProtoGenericClient(destServiceName string, protoFilePath string) (genericclient.Client, error) {
 	instances := utils.GetInstances(destServiceName)
 
 	if len(instances) == 0 {

@@ -14,7 +14,7 @@ import (
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-func NewHTTPGenericClient(destServiceName string, thriftFilePath string) (genericclient.Client, error) {
+func newHTTPGenericClient(destServiceName string, thriftFilePath string) (genericclient.Client, error) {
 	// **PRE-OPTIMIZATION**
 	// instances := DiscoverAddress(destServiceName)
 

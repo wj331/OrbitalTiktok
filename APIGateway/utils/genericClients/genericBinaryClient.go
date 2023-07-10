@@ -13,7 +13,7 @@ import (
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-func NewBinaryGenericClient(destServiceName string) (genericclient.Client, error) {
+func newBinaryGenericClient(destServiceName string) (genericclient.Client, error) {
 	// **PRE-OPTIMIZATION**
 	// instances := DiscoverAddress(destServiceName)
 

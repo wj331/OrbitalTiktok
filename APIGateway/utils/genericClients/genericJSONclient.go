@@ -13,7 +13,7 @@ import (
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-func NewJSONGenericClient(destServiceName string, thriftFilePath string) (genericclient.Client, error) {
+func newJSONGenericClient(destServiceName string, thriftFilePath string) (genericclient.Client, error) {
 	// **PRE-OPTIMIZATION**
 	// instances := DiscoverAddress(destServiceName)
 

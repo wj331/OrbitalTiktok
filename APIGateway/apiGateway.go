@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -40,11 +39,6 @@ import (
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils/genericClients"
 )
 
-type ServiceDetails struct {
-	Version  string
-	FilePath string
-}
-
 // configurations
 var (
 	/*
@@ -52,20 +46,20 @@ var (
 	*/
 	pools = map[string]*sync.Pool{}
 
-	services = map[string][]ServiceDetails{
+	services = map[string][]genericClients.ServiceDetails{
 		"PeopleService": {
-			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift"},
+			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift", GenericClientType: 1},
 			// Other versions for e.g.
 			// {Version: "v2.0.0", FilePath: "./thrift/orbital_v2.thrift"},
 		},
 		"BizService": {
-			{Version: "v1.0.0", FilePath: "./thrift/http.thrift"},
+			{Version: "v1.0.0", FilePath: "./thrift/http.thrift", GenericClientType: 2},
 		},
 		"JSONService": {
-			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift"},
+			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift", GenericClientType: 3},
 		},
 		"JSONProtoService": {
-			{Version: "v1.0.0", FilePath: "./protobuf/mock.proto"},
+			{Version: "v1.0.0", FilePath: "./protobuf/mock.proto", GenericClientType: 4},
 		},
 	}
 
@@ -74,7 +68,6 @@ var (
 	/*
 		Caching
 	*/
-
 	// Set to true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
 	enableCaching = false
 
@@ -109,54 +102,17 @@ func init() {
 		klog.Fatalf("Failed to create Nacos client: %v", err)
 	}
 
-	// get all available service names
+	// get all available services as per configuration
 	serviceNames = make([]string, 0, len(services))
 	for serviceName := range services {
 		serviceNames = append(serviceNames, serviceName)
 	}
 
-	// Immediately adds all valid RPC instances for all services.
+	// Initializes/adds all valid RPC instances for all services.
 	localUtils.AddInitialInstance(serviceNames)
 
-	// initializing of generic client pools upon apigateway startup
-	pools = make(map[string]*sync.Pool)
-	for serviceName, details := range services {
-		// Set up pools for each version of this service
-		for _, detail := range details {
-			poolKey := serviceName + "_" + detail.Version
-			pools[poolKey] = newClientPool(serviceName, detail.FilePath)
-		}
-	}
-}
-
-func newClientPool(serviceName string, protoFilePath string) *sync.Pool {
-	return &sync.Pool{
-		New: func() interface{} {
-			var (
-				cc  genericclient.Client
-				err error
-			)
-			// TODO: change it to integer values
-			switch serviceName {
-			case "PeopleService":
-				cc, err = genericClients.NewBinaryGenericClient(serviceName)
-			case "BizService":
-				cc, err = genericClients.NewHTTPGenericClient(serviceName, protoFilePath)
-			case "JSONService":
-				cc, err = genericClients.NewJSONGenericClient(serviceName, protoFilePath)
-			case "JSONProtoService":
-				cc, err = genericClients.NewJSONProtoGenericClient(serviceName, protoFilePath)
-			default:
-				log.Print("Invalid service name")
-				return nil
-			}
-			if err != nil {
-				log.Print("unable to generate new client")
-				return nil
-			}
-			return cc
-		},
-	}
+	// Initializes the generic client pool
+	pools = genericClients.InitGenericClientPool(services)
 }
 
 func main() {
