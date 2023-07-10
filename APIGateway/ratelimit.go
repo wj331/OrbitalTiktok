@@ -14,6 +14,11 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+var (
+	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
+	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
+)
+
 // Please note that this code has scalability issues. Each instance would have its own cache of rate limiters, and a client could potentially make more requests than allowed by distributing their requests across multiple instances.
 // But still ok for now
 func rateLimitMiddleware(next func(context.Context, *app.RequestContext)) func(context.Context, *app.RequestContext) {

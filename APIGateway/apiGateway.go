@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	hertzCache "github.com/hertz-contrib/cache"
 	"github.com/hertz-contrib/cache/persist"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -33,7 +31,6 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
 	// imported as `cache`
-	"github.com/patrickmn/go-cache"
 
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/utils/genericClients"
@@ -42,10 +39,15 @@ import (
 // configurations
 var (
 	/*
+		Ports & Addresses
+	*/
+	APIGatewayHostPort = "127.0.0.1:8080" // where this api gateway will be hosted
+	nacosIpAddr        = "127.0.0.1"
+	nacosPortNum       = 8848
+
+	/*
 		Mapping of service & IDL's
 	*/
-	pools = map[string]*sync.Pool{}
-
 	services = map[string][]genericClients.ServiceDetails{
 		"PeopleService": {
 			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift", GenericClientType: 1},
@@ -63,29 +65,25 @@ var (
 		},
 	}
 
+	// Following will be filled upon initialization
+	pools        = map[string]*sync.Pool{}
 	serviceNames []string
 
 	/*
 		Caching
 	*/
-	// Set to true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
+	// Set true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
 	enableCaching = false
-
-	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
-	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
-
-	// rate limiting numbers. set HIGH for benchmark purposes
-	MaxQPS    = 10000000000000 // Each IP address how many QPS
-	BurstSize = 10000000000000 // number of events that can occur at ONCE
 
 	// cache time allowed before evicted from cache. i.e. how long stored in cache
 	cacheExpiryTime = 2 * time.Second
+	memoryStore     = persist.NewMemoryStore(1 * time.Minute)
 
-	// cache counters
-	cacheHitCount, cacheMissCount int32
-
-	// codec to be used specifically for RegisterRouteBinaryGenericCall
-	rc = utils.NewThriftMessageCodec()
+	/*
+		Rate limiting
+	*/
+	MaxQPS    = 10000000000000
+	BurstSize = 10000000000000
 )
 
 func init() {
@@ -94,7 +92,7 @@ func init() {
 	localUtils.NacosClient, err = clients.NewNamingClient(
 		vo.NacosClientParam{
 			ServerConfigs: []constant.ServerConfig{
-				*constant.NewServerConfig("127.0.0.1", 8848),
+				*constant.NewServerConfig(nacosIpAddr, uint64(nacosPortNum)),
 			},
 		},
 	)
@@ -116,20 +114,11 @@ func init() {
 }
 
 func main() {
-	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
+	h := server.Default(server.WithHostPorts(APIGatewayHostPort))
 
 	if enableCaching {
-		memoryStore := persist.NewMemoryStore(1 * time.Minute)
-		h.Use(hertzCache.NewCacheByRequestURI(
-			memoryStore,
-			cacheExpiryTime,
-			hertzCache.WithOnHitCache(func(ctx context.Context, c *app.RequestContext) {
-				atomic.AddInt32(&cacheHitCount, 1)
-			}),
-			hertzCache.WithOnMissCache(func(ctx context.Context, c *app.RequestContext) {
-				atomic.AddInt32(&cacheMissCount, 1)
-			}),
-		))
+		cacheDetails := localUtils.CachingDetails(memoryStore, cacheExpiryTime)
+		h.Use(cacheDetails)
 	}
 
 	// register routes
@@ -304,6 +293,7 @@ func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 		Name string `json:"name"`
 		Age  int    `json:"age"`
 	}
+	rc := utils.NewThriftMessageCodec()
 
 	v1 := h.Group("/PeopleService")
 	{
@@ -388,10 +378,10 @@ func RegisterCacheRoute(h *server.Hertz) {
 		}))
 		// if response is in cache
 		v1.GET("/get_hit_count", func(ctx context.Context, c *app.RequestContext) {
-			c.String(200, fmt.Sprintf("total hit count: %d", cacheHitCount))
+			c.String(200, fmt.Sprintf("total hit count: %d", localUtils.CacheHitCount))
 		})
 		v1.GET("/get_miss_count", func(ctx context.Context, c *app.RequestContext) {
-			c.String(200, fmt.Sprintf("total miss count: %d", cacheMissCount))
+			c.String(200, fmt.Sprintf("total miss count: %d", localUtils.CacheMissCount))
 		})
 	}
 }
