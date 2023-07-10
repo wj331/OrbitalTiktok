@@ -18,9 +18,14 @@ var (
 	// IP addresses in the cache expires after 5 minutes of no access, and the library by patrickmn automatically cleans up expired items every 6 minutes.
 	limiterCache = cache.New(5*time.Minute, 6*time.Minute)
 
-	MaxQPS    = 10000000000000 // set high for benchmarking testing
-	BurstSize = 10000000000000
+	maxQPS    = 10000
+	burstSize = 100
 )
+
+func SetRatelimits(QPS int, bs int) {
+	maxQPS = QPS
+	burstSize = bs
+}
 
 // Please note that this code has scalability issues. Each instance would have its own cache of rate limiters, and a client could potentially make more requests than allowed by distributing their requests across multiple instances.
 // But still ok for now
@@ -37,7 +42,7 @@ func RateLimitMiddleware(next func(context.Context, *app.RequestContext)) func(c
 		limiter, found := limiterCache.Get(clientIP)
 		if !found {
 			// If this is the first time we've seen this IP address, create a rate limiter for it.
-			limiter = rate.NewLimiter(rate.Every(time.Minute/time.Duration(MaxQPS)), BurstSize)
+			limiter = rate.NewLimiter(rate.Every(time.Minute/time.Duration(maxQPS)), burstSize)
 			limiterCache.Set(clientIP, limiter, cache.DefaultExpiration)
 		}
 

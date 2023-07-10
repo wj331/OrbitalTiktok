@@ -70,8 +70,8 @@ var (
 	/*
 		Rate limiting
 	*/
-	MaxQPS    = 10000000000000 // set high for benchmarking testing
-	BurstSize = 10000000000000
+	MaxQPS    = 10000000000000 // default set to 10,000
+	BurstSize = 10000000000000 // default set to 100
 )
 
 func init() {
@@ -96,6 +96,7 @@ func init() {
 
 	// Initializes/adds all valid RPC instances for all services.
 	localUtils.AddInitialInstance(serviceNames)
+	localUtils.SetRatelimits(MaxQPS, BurstSize)
 
 	// Initializes the generic client pool
 	routes.Pools = genericClients.InitGenericClientPool(services)
