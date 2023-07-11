@@ -19,15 +19,18 @@ import (
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
+type RequestData struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+var (
+	rc = utils.NewThriftMessageCodec()
+)
+
 // for Binary generic call
 func RegisterRouteBinaryGenericCall(h *server.Hertz) {
 	h.StaticFS("/", &app.FS{Root: "./", GenerateIndexPages: true})
-
-	type RequestData struct {
-		Name string `json:"name"`
-		Age  int    `json:"age"`
-	}
-	rc := utils.NewThriftMessageCodec()
 
 	v1 := h.Group("/PeopleService")
 	{
