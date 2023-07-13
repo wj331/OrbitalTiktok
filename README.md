@@ -62,7 +62,7 @@ Benchmarking was done using Apache Bench, on the newly created JSON (Proto) Gene
 * JSON file used in request body (1,118 bytes): `APIGateway/test/postDataProto.json`
 
 Command used: <br>
-`ab -n 150000 -c 100 -k -p test/postDataProto.json -T 'application/json' http://127.0.0.1:8080/jsonprotoservice/Test`
+`ab -n 200000 -c 100 -k -p test/postDataProto.json -T 'application/json' http://127.0.0.1:8080/jsonprotoservice/Test`
 
 ### Results:
 Time per request across all concurrent requests: 0.026ms
