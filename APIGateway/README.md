@@ -31,3 +31,6 @@ Utils folder contains:
 * implementations for Service Discovery of RPC servers
 * implementations for Rate limiting
 * implementations for caching of requests
+
+Protobuf/Thrift folders
+* stores the respective IDL files
