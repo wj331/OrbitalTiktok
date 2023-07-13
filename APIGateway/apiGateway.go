@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -11,8 +12,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"github.com/hertz-contrib/cache/persist"
-
-	"github.com/cloudwego/kitex/pkg/klog"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -32,7 +31,7 @@ func init() {
 	// initialize configuration file. if there is a change in config file -> graceful shutdown & restart apigateway
 	configs, err = config.InitConfig()
 	if err != nil {
-		klog.Fatalf("Failed to initialize configuration file %v", err)
+		log.Fatalf("Failed to initialize configuration file %v", err)
 	}
 
 	// initialize Nacos service discovery
@@ -45,7 +44,7 @@ func init() {
 		},
 	)
 	if err != nil {
-		klog.Fatalf("Failed to create Nacos client: %v", err)
+		log.Fatalf("Failed to create Nacos client: %v", err)
 	}
 
 	// 1) Initializes the generic client pool, using the service configuration file
