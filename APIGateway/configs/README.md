@@ -15,6 +15,11 @@ File: service_configs.json is the configuration file for services. It has the st
         "Version": "v1.0.0",
         "FilePath": "./example/path",
         "GenericClientType": 1
+      },
+        {
+        "Version": "v2.0.0",
+        "FilePath": "./example/path2",
+        "GenericClientType": 2
       }
     ],
 }
