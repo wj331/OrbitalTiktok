@@ -1,0 +1,8 @@
+{
+    "APIEndpoint": "127.0.0.1:8080",
+    "NacosIpAddr": "127.0.0.1",
+    "NacosPort": 8848,
+    "CachingEnabled": false,
+    "MaxQPS": 10000000,
+    "BurstSize": 1000000
+}

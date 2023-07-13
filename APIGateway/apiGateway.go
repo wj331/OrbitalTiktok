@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	// "encoding/json"
 	"fmt"
-	// "os"
-	// "os/signal"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -21,46 +18,29 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
-	// "github.com/fsnotify/fsnotify"
-
+	config "github.com/simbayippy/OrbitalxTiktok/APIGateway/configs"
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/routes"
-
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/serviceDetails"
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-// configurations
-var (
-	/*
-		Ports & Addresses
-	*/
-	APIGatewayHostPort = "127.0.0.1:8080" // where this api gateway will be hosted
-	nacosIpAddr        = "127.0.0.1"
-	nacosPortNum       = 8848
-
-	/*
-		Caching
-	*/
-	enableCaching = false // Set true to enable caching on ALL endpoints. Default set to false for benchmarking purposes
-
-	// cache time allowed before evicted from cache. i.e. how long stored in cache
-	cacheExpiryTime = 2 * time.Second
-	memoryStore     = persist.NewMemoryStore(1 * time.Minute)
-
-	/*
-		Rate limiting
-	*/
-	MaxQPS    = 10000000000000 // default set to 10,000
-	BurstSize = 10000000000000 // default set to 100
-)
+var configs config.Configuration
 
 func init() {
-	// Nacos service registry
 	var err error
+
+	// initialize configuration file
+	configs, err = config.InitConfig()
+	if err != nil {
+		klog.Fatalf("Failed to initialize configuration file %v", err)
+	}
+
+	// initialize Nacos service discovery
 	localUtils.NacosClient, err = clients.NewNamingClient(
 		vo.NacosClientParam{
 			ServerConfigs: []constant.ServerConfig{
-				*constant.NewServerConfig(nacosIpAddr, uint64(nacosPortNum)),
+				// *constant.NewServerConfig(nacosIpAddr, uint64(nacosPortNum)),
+				*constant.NewServerConfig(configs.NacosIpAddr, configs.NacosPort),
 			},
 		},
 	)
@@ -76,14 +56,14 @@ func init() {
 
 	// 3) Get valid RPC instances for all services.
 	localUtils.AddInitialInstance(serviceNames)
-	localUtils.SetRatelimits(MaxQPS, BurstSize)
+	localUtils.SetRatelimits(configs.MaxQPS, configs.BurstSize)
 }
 
 func main() {
-	h := server.Default(server.WithHostPorts(APIGatewayHostPort))
+	h := server.Default(server.WithHostPorts(configs.APIEndpoint))
 
-	if enableCaching {
-		cacheDetails := localUtils.CachingDetails(memoryStore, cacheExpiryTime)
+	if configs.CachingEnabled {
+		cacheDetails := localUtils.CachingDetails(persist.NewMemoryStore(1*time.Minute), 2*time.Second)
 		h.Use(cacheDetails)
 	}
 
@@ -111,7 +91,7 @@ func main() {
 		}
 	}()
 
-	// continuously check for changes in config file
+	// continuously checks for changes in config file, but ONLY triggers when an actual change occurs
 	go serviceDetails.WatchServiceChanges()
 
 	h.Spin()

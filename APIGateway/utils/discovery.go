@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/vo"
@@ -30,33 +29,13 @@ func AddInitialInstance(services []string) {
 	}
 }
 
-func RefreshInstances2(services []string) {
-	go func() {
-		// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
-		ticker := time.NewTicker(time.Minute)
-		for {
-			select {
-			case <-ticker.C:
-				for _, service := range services {
-					serviceInstances := instances[service]
-					serviceInstances.Lock()
-					serviceInstances.Instances = discoverAddress(service)
-					serviceInstances.Unlock()
-				}
-			}
-		}
-	}()
-}
-
 func RefreshInstances(services []string) {
-	// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
 	for _, service := range services {
 		serviceInstances := instances[service]
 		serviceInstances.Lock()
 		serviceInstances.Instances = discoverAddress(service)
 		serviceInstances.Unlock()
 	}
-
 }
 
 func GetInstances(service string) []string {
@@ -73,14 +52,13 @@ func discoverAddress(serviceName string) []string {
 		return nil
 	}
 
-	// **OPTIMIZATION** initialized the nacos client at the begging instead of creating a new nacos client every time DiscoverAddress is called
+	// note, if RPC is not currently online, the following line returns the previous available instance from Nacos cache.
 	service, err := NacosClient.GetService(vo.GetServiceParam{
 		ServiceName: serviceName,
 	})
 	if err != nil {
 		prevInstances := GetInstances(serviceName)
 		log.Printf("Failed to discover services: %v", err)
-		// Return the previously known instances (if any) instead of exiting the application
 		return prevInstances
 	}
 
