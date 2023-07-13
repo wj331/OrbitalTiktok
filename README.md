@@ -28,7 +28,7 @@ Build and run the API Gateway:
 This API gateway serves as the single entry point into the system, dealing with HTTP requests from the clients, translating them into the appropriate RPC request formats, and forwarding these to the corresponding RPC servers. The response is then returned back to the client.
 
 It supports the following Generic Calls of Kitex:
-* JSON thrift Generic Call
+* JSON thrift Generic Call (main deliverable of this project)
 * HTTP Mapping Generic Call
 * Binary Generic Call
 

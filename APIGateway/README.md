@@ -9,6 +9,17 @@
 8. Response caching for identical requests.
 9. Quickly & seamlessly handles large volume of requests. 0.032ms mean time per request across 200,000 concurrent requests during benchmarking.
 
+## Deliverables accomplished
+The main deliverable for this project was utilizing of the Thrift codec for Generic Call. Implementation for this lies under:
+* `pkg/routes/routeJSONThrift.go` 
+* `pkg/genericClients/genericJSONThriftClient.go`
+
+Additional assignment was also accomplished. Implementation for the jsonproto_codec can be found [here](https://github.com/simbayippy/kitex)
+
+Implementation for this new codec of in this API Gateway lies under:
+* `pkg/routes/routeJSONProto.go` 
+* `pkg/genericClients/genericJSONProtoClient.go`
+
 ## Usage
 Set-up your configurations in `configs` folder
 
