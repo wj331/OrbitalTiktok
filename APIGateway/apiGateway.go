@@ -29,7 +29,7 @@ var configs config.Configuration
 func init() {
 	var err error
 
-	// initialize configuration file
+	// initialize configuration file. if there is a change in config file -> graceful shutdown & restart apigateway
 	configs, err = config.InitConfig()
 	if err != nil {
 		klog.Fatalf("Failed to initialize configuration file %v", err)
@@ -98,8 +98,8 @@ func main() {
 }
 
 /*
-	Left the basic route handlers as per documentation of Kitex here.
-	Abstracted away main implementations to pkg/routes
+	Left the basic route handlers as per documentation from Kitex here.
+	Abstracted away main implementations for this project to pkg/routes
 */
 
 // RegisterCacheRoute: to demonstrate caching
