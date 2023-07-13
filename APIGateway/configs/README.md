@@ -16,10 +16,10 @@ File service_configs.json is the configuration file for services. It has the str
 │       └── genericClientType
 │
 └── ServiceName 2
-    ├── version 1
-    │   ├── filepath
-    │   └── genericClientType
-    └── version 2
-        └── filepath
-        └── genericClientType
+│   ├── version 1
+│   │   ├── filepath
+│   │   └── genericClientType
+│   └── version 2
+│       └── filepath
+│       └── genericClientType
 ```
