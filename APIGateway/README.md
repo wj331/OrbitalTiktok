@@ -9,6 +9,12 @@
 8. Response caching for identical requests.
 9. Quickly & seamlessly handles large volume of requests. 0.032ms mean time per request across 200,000 concurrent requests during benchmarking.
 
+## Usage
+Set-up your configurations in `configs` folder
+
+Run the API Gateway:
+`go run .`
+
 ## Code structure 
 Implementation for API Gateway lies in `apiGateway.go`
 
@@ -25,7 +31,3 @@ Utils folder contains:
 * implementations for Service Discovery of RPC servers
 * implementations for Rate limiting
 * implementations for caching of requests
-
-## Usage
-To run the API Gateway:
-`go run .`
