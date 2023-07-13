@@ -52,6 +52,9 @@ Currently, 4 types of RPC servers have been built to handle the different Generi
 and the new addition:
 * JSON proto RPC
 
+To start a server, navigate into its folder and run:
+`go run main.go`
+
 ## Benchmarking
 Benchmarking was done using Apache Bench, on the newly created JSON (Proto) Generic Call
 
