@@ -9,19 +9,15 @@ File: configs.json allows for the configuration of:
 
 File: service_configs.json is the configuration file for services. It has the structure (in JSON):
 ```
-.
-├── ServiceName 1
-│   └── version 1
-│       ├── filepath
-│       └── genericClientType
-│
-└── ServiceName 2
-│   ├── version 1
-│   │   ├── filepath
-│   │   └── genericClientType
-│   └── version 2
-│       └── filepath
-│       └── genericClientType
+{
+    "ServiceName": [
+      {
+        "Version": "v1.0.0",
+        "FilePath": "./example/path",
+        "GenericClientType": 1
+      }
+    ],
+}
 ```
 
 ### GenericClientType integer identifies
