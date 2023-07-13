@@ -26,17 +26,18 @@ Set-up your configurations in `configs` folder
 Run the API Gateway:
 `go run .`
 
-To test the API Gateway, send the curl command:
+To test the API Gateway, send the curl command: <br>
 `curl -X POST -H "Content-Type: application/json" -d @APIGateway/benchmark/postDataProto.json http://127.0.0.1:8080/JSONProtoService/v1.0.0/Test`
 
-You should obtain the response:
+You should obtain the response: <br>
 `"{\"response\":\"hello\"}"`
 
 To run your own tests
 1. add your thrift/protobuf file into the respective folders
 2. add its service into the `configs/service_configs.json` file
-3. adjust the generic client to be used and created through `GenericClientType`
+3. include the generic client to be used and created through `GenericClientType`
 4. create its own route handler. Follow the existing implementations
+5. create your own RPC servers to handle this new service
 
 ## Code structure 
 Implementation for API Gateway lies in `apiGateway.go`
