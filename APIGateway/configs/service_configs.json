@@ -25,6 +25,6 @@
         "Version": "v1.0.0",
         "FilePath": "./protobuf/mock.proto",
         "GenericClientType": 4
-      }
+      } 
     ]
 }
