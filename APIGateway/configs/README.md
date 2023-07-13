@@ -25,7 +25,7 @@
 }
 ```
 
-### GenericClientType integer identifies
+GenericClientType integer identifies
 * 1: creates a generic Binary client
 * 2: creates a generic HTTP client
 * 3: creates a generic JSON Thrift client
