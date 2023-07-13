@@ -34,10 +34,10 @@ You should obtain the response: <br>
 
 To run your own tests
 1. add your thrift/protobuf file into the respective folders
-2. add its service into the `configs/service_configs.json` file
+2. add its service into `configs/service_configs.json`
 3. include the generic client to be used and created through `GenericClientType`
 4. create its own route handler. Follow the existing implementations
-5. create your own RPC servers to handle this new service
+5. implement the RPC servers to handle this new service under `../RPCservers`
 
 ## Code structure 
 Implementation for API Gateway lies in `apiGateway.go`
