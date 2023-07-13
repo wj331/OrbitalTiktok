@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
+	// "encoding/json"
 	"fmt"
+	// "os"
+	// "os/signal"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/server/basic_auth"
 	"github.com/cloudwego/hertz/pkg/app/server"
-
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"github.com/hertz-contrib/cache/persist"
@@ -19,8 +21,11 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
-	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/genericClients"
+	// "github.com/fsnotify/fsnotify"
+
 	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/routes"
+
+	"github.com/simbayippy/OrbitalxTiktok/APIGateway/pkg/serviceDetails"
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
@@ -32,29 +37,6 @@ var (
 	APIGatewayHostPort = "127.0.0.1:8080" // where this api gateway will be hosted
 	nacosIpAddr        = "127.0.0.1"
 	nacosPortNum       = 8848
-
-	/*
-		Mapping of service & IDL's
-	*/
-	services = map[string][]genericClients.ServiceDetails{
-		"PeopleService": {
-			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift", GenericClientType: 1},
-			// Other versions for e.g.
-			// {Version: "v2.0.0", FilePath: "./thrift/orbital_v2.thrift"},
-		},
-		"BizService": {
-			{Version: "v1.0.0", FilePath: "./thrift/http.thrift", GenericClientType: 2},
-		},
-		"JSONService": {
-			{Version: "v1.0.0", FilePath: "./thrift/orbital.thrift", GenericClientType: 3},
-		},
-		"JSONProtoService": {
-			{Version: "v1.0.0", FilePath: "./protobuf/mock.proto", GenericClientType: 4},
-		},
-	}
-
-	// serviceNames data will be filled upon initialization
-	serviceNames []string
 
 	/*
 		Caching
@@ -86,18 +68,15 @@ func init() {
 		klog.Fatalf("Failed to create Nacos client: %v", err)
 	}
 
-	// get all available services as per configuration
-	serviceNames = make([]string, 0, len(services))
-	for serviceName := range services {
-		serviceNames = append(serviceNames, serviceName)
-	}
+	// 1) Initializes the generic client pool, using the service configuration file
+	serviceDetails.InitServiceMapping()
 
-	// Initializes/adds all valid RPC instances for all services.
+	// 2) Get the string list of services available as per configuration
+	serviceNames := serviceDetails.GetServiceNames()
+
+	// 3) Get valid RPC instances for all services.
 	localUtils.AddInitialInstance(serviceNames)
 	localUtils.SetRatelimits(MaxQPS, BurstSize)
-
-	// Initializes the generic client pool
-	routes.Pools = genericClients.InitGenericClientPool(services)
 }
 
 func main() {
@@ -117,7 +96,23 @@ func main() {
 	RegisterAuthRoute(h)
 
 	// updates instances of services every minute
-	localUtils.RefreshInstances(serviceNames)
+	go func() {
+		ticker := time.NewTicker(time.Minute)
+		for {
+			select {
+			case <-ticker.C:
+				// gets the services available / checks if there is a change in services
+				serviceNames := serviceDetails.GetServiceNames()
+
+				// refreshes & updates list of RPC instances, even if there is no change in services
+				// -> even if no change in services, available RPC instances may change
+				localUtils.RefreshInstances(serviceNames)
+			}
+		}
+	}()
+
+	// continuously check for changes in config file
+	go serviceDetails.WatchServiceChanges()
 
 	h.Spin()
 }

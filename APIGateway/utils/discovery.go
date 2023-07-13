@@ -30,7 +30,7 @@ func AddInitialInstance(services []string) {
 	}
 }
 
-func RefreshInstances(services []string) {
+func RefreshInstances2(services []string) {
 	go func() {
 		// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
 		ticker := time.NewTicker(time.Minute)
@@ -46,6 +46,17 @@ func RefreshInstances(services []string) {
 			}
 		}
 	}()
+}
+
+func RefreshInstances(services []string) {
+	// TODO: interval of often the API gateway refreshes and gets available services from nacos backend registry
+	for _, service := range services {
+		serviceInstances := instances[service]
+		serviceInstances.Lock()
+		serviceInstances.Instances = discoverAddress(service)
+		serviceInstances.Unlock()
+	}
+
 }
 
 func GetInstances(service string) []string {

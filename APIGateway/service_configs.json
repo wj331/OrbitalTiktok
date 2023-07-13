@@ -1,0 +1,30 @@
+{
+    "PeopleService": [
+      {
+        "Version": "v1.0.0",
+        "FilePath": "./thrift/orbital.thrift",
+        "GenericClientType": 1
+      }
+    ],
+    "BizService": [
+      {
+        "Version": "v1.0.0",
+        "FilePath": "./thrift/http.thrift",
+        "GenericClientType": 2
+      }
+    ],
+    "JSONService": [
+      {
+        "Version": "v1.0.0",
+        "FilePath": "./thrift/orbital.thrift",
+        "GenericClientType": 3
+      }
+    ],
+    "JSONProtoService": [
+      {
+        "Version": "v1.0.0",
+        "FilePath": "./protobuf/mock.proto",
+        "GenericClientType": 4
+      }
+    ]
+}
