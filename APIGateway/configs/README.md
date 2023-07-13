@@ -25,7 +25,7 @@ File: service_configs.json is the configuration file for services. It has the st
 ```
 
 ### GenericClientType integer identifies
-1: creates a generic Binary client
-2: creates a generic HTTP client
-3: creates a generic JSON Thrift client
-4: creates a generic JSON Protobuf client
+* 1: creates a generic Binary client
+* 2: creates a generic HTTP client
+* 3: creates a generic JSON Thrift client
+* 4: creates a generic JSON Protobuf client
