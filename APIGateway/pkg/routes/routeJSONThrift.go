@@ -13,7 +13,6 @@ import (
 	localUtils "github.com/simbayippy/OrbitalxTiktok/APIGateway/utils"
 )
 
-// for JSON generic call. MAIN use case for TikTok. Basically forwards the request that the API gateway receives directly to the RPC server.
 func RegisterRouteJSONThrift(h *server.Hertz) {
 	v1 := h.Group("/JSONService")
 	{
