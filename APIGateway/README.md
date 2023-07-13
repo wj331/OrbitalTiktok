@@ -29,17 +29,3 @@ Utils folder contains:
 ## Usage
 To run the API Gateway:
 `go run .`
-
-## Routes
-Routes are registered for each type of Generic Call. Below are the registered endpoints:
-* `/jsonservice/:method`: Handles JSON Thrift generic call.
-* `/bizservice/:method`: Handles HTTP generic call.
-* `/post`: Handles Binary generic call.
-
-* `/jsonprotoservice/:method`: Handles JSON Protobuf generic call.
-
-Each endpoint utilizes a middleware for rate limiting (based on IP address). Caching can also be configured to improve the performance of frequent identical requests.
-
-## Development
-* To add a new service, extend the pools map with the service name as key and the generic client pool as value.
-* To register a new route, follow the format of the existing RegisterRoute functions.
