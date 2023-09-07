@@ -1,5 +1,5 @@
 # Orbital API Gateway
-##Full documentation can be read at the following Gitbook [link](https://orbital-tiktok.gitbook.io/orbital-tiktok/).
+## Full documentation can be read at the following Gitbook [link](https://orbital-tiktok.gitbook.io/orbital-tiktok/).
 
 This is an implementation of an API gateway, built using cloudwego's Hertz and Kitex libraries. It routes requests to appropriate RPC servers simulating microservices, and employs caching and rate limiting strategies.
 
